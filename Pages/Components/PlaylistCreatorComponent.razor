@@ -1,0 +1,106 @@
+﻿@using SpotPG.Utils
+@using SpotPG.Services.Abstractions
+@using SpotPG.Models
+@inject IClipboardService ClipboardService
+@inject ISpotifyMetaInfoFetcherService SpotifyMetaInfoFetcherService
+@inject ISpotifyPlaylistsManagerService SpotifyPlaylistsManagerService
+@inject ISnackbar Snackbar
+
+@if (allTracksFromAlbums == null)
+{
+    <MudButton OnClick="CreatePlaylist" Disabled="@inProcessNow" Variant="Variant.Filled" EndIcon="@Icons.Material.Create" Color="Color.Primary">
+        Create playlist
+    </MudButton>
+}
+
+@if (inProcessNow)
+{
+    <div class="mt-5 align-content-center text-center justify-content-center">
+        <p><b>@progressString</b></p>
+        <MudProgressLinear Color="Color.Primary" Value="@(100 - progressPercent)" />
+    </div>
+}
+
+@if (allTracksFromAlbums != null)
+{
+    <MudGrid>
+        <MudItem xs="12">
+            <MudTable Items="@allTracksFromAlbums" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" RowsPerPage="100">
+                <HeaderContent>
+                    <MudTh>Artists</MudTh>
+                    <MudTh>Name</MudTh>
+                    <MudTh>Duration</MudTh>
+                </HeaderContent>
+
+                <RowTemplate>
+                    <MudTd DataLabel="Cover">@FormatArtists(context)</MudTd>
+                    <MudTd DataLabel="Name">@context.Name</MudTd>
+                    <MudTd DataLabel="Duration">@FormatDuration(context.Duration)</MudTd>
+                </RowTemplate>
+
+                <PagerContent>
+                    <MudTablePager/>
+                </PagerContent>
+            </MudTable>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+
+    [Parameter]
+    public IEnumerable<SpotifyAlbum> Releases { get; set; }
+
+    private List<SpotifyTrack> allTracksFromAlbums;
+    private SpotifyPlaylist playlistInformation;
+
+    private bool IsPlaylistCreationDisabled => Releases == null || !Releases.Any();
+
+    private string GetPlaylistName() => $"Generated {DateTime.Now:yyyy/MM/dd HH:mm:ss}";
+
+    private string progressString;
+    private int progressPercent;
+    bool inProcessNow = false;
+
+    private async Task CreatePlaylist()
+    {
+        inProcessNow = true;
+
+        allTracksFromAlbums = new List<SpotifyTrack>();
+
+        foreach ((var album, int getAlbumProgress) in Releases.ToList().ProgressForEach())
+        {
+            SetProgress(getAlbumProgress, $"Processing {String.Join(",", album.Artists)} - {album.ReleaseName}…");
+
+            var tracks = await SpotifyMetaInfoFetcherService.GetAlbumTrackAsync(album.Id);
+            if (tracks.IsFailed)
+            {
+                Snackbar.Add("Error while downloading release info from Spotify", Severity.Error);
+                return;
+            }
+
+            allTracksFromAlbums.AddRange(tracks.Value);
+        }
+
+        var progressInst = new Progress<int>(v => SetProgress(v, "Creating playlist…"));
+        playlistInformation = await SpotifyPlaylistsManagerService.CreatePlaylistAsync(GetPlaylistName(), allTracksFromAlbums, progressInst);
+
+        await ClipboardService.WriteTextAsync(playlistInformation?.ExternalUrl);
+        Snackbar.Add("Playlist URL was copied into clipboard", Severity.Info);
+
+        inProcessNow = false;
+    }
+
+    private string FormatDuration(TimeSpan duration) => (int) duration.TotalHours == 0
+        ? $"{(int) duration.TotalMinutes}:{duration.Seconds:00}"
+        : $"{(int) duration.TotalHours}:{duration.Minutes:00}:{duration.Seconds:00}";
+
+    private string FormatArtists(SpotifyTrack track) => String.Join(", ", track.Artists);
+
+    private void SetProgress(int progress, string text)
+    {
+        progressPercent = progress;
+        progressString = text;
+        StateHasChanged();
+    }
+}

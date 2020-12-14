@@ -1,0 +1,50 @@
+﻿@using SpotPG.Services
+@using SpotPG.Pages.Components.Sources
+<MudGrid>
+    <MudItem xs="12" md="12">
+        <MudPaper Class="d-flex py-2 px-1" Elevation="0">
+            <MudPaper Class="flex-grow-0 flex-shrink-0 pa-2 mx-2 order-1" Elevation="0">
+                <MudList Clickable="true">
+                    @foreach (string fragmentKey in fragments.Keys)
+                    {
+                        <MudListItem Text="@fragmentKey" Icon="@Icons.Material.Source" OnClick="() => activeFragment = fragments[fragmentKey]"/>
+                        <MudDivider/>
+                    }
+                </MudList>
+            </MudPaper>
+
+            <MudPaper Class="flex-grow-1 flex-shrink-0 pa-2 mx-2 order-2" Elevation="0">
+                @activeFragment
+            </MudPaper>
+        </MudPaper>
+    </MudItem>
+</MudGrid>
+
+
+@code {
+
+    private RenderFragment activeFragment;
+
+    [Parameter]
+    public EventCallback<IEnumerable<ReleaseInfo>> OnReleasesInfoReceived { get; set; }
+
+    private readonly IDictionary<string, RenderFragment> fragments = new Dictionary<string, RenderFragment>();
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        fragments.Add("Scene: m2v.ru", CreateDynamicComponent<M2vSource>());
+        fragments.Add("Scene: nfodb.ru", CreateDynamicComponent<NfoDbSource>());
+        fragments.Add("Scene: scenemp3.org", CreateDynamicComponent<SceneMp3Source>());
+        fragments.Add("Scene: manual", CreateDynamicComponent<ManualSource>());
+
+        activeFragment = fragments["Scene: m2v.ru"];
+    }
+
+    RenderFragment CreateDynamicComponent<T>() => builder => {
+        builder.OpenComponent(0, typeof(T));
+        builder.AddAttribute(1, "OnReleaseListLoaded", EventCallback.Factory.Create<IEnumerable<ReleaseInfo>>(this, r => OnReleasesInfoReceived.InvokeAsync(r)));
+        builder.CloseComponent();
+    };
+}

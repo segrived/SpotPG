@@ -1,0 +1,29 @@
+﻿@using SpotPG.Services.Abstractions
+@using SpotPG.Services
+@inject ISceneReleaseNameParserService ParserService
+
+<div class="mb-2">
+    <MudTextField T="string" Variant="Variant.Text" Text="@content" Lines="20"/>
+</div>
+
+<div>
+    <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="Process" type="primary">Process</MudButton>
+</div>
+
+@code {
+    // ReSharper disable once FieldCanBeMadeReadOnly.Local
+    private string content = String.Empty;
+
+    private async Task Process() => await OnReleaseListLoaded.InvokeAsync(Parse(content));
+
+    [Parameter]
+    public EventCallback<IEnumerable<ReleaseInfo>> OnReleaseListLoaded { get; set; }
+
+}
+
+<style>
+    textarea {
+        font-family: monospace;
+        font-size: small;
+     }
+</style>

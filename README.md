@@ -1,0 +1,3 @@
+# SpotPG
+
+Spotify Playlist Generator

@@ -1,0 +1,91 @@
+﻿@page "/settings"
+@using SpotPG.Services.Abstractions
+@using SpotifyAPI.Web
+@using System.Web
+@inject NavigationManager NavManager
+@inject ISpotifyCredentialsManager SpotifyCredentialsManager
+
+<MudCard Class="mb-2">
+    <MudGrid Class="p-3">
+        <MudItem xs="12" sm="12" md="12">
+            <h4 class="text-center">Spotify configuration</h4>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="6">
+            <MudTextField @bind-Value="@SpotifyCredentialsManager.ClientId"
+                           Label="Client ID"
+                           Variant="Variant.Text"
+                           Adornment="Adornment.End"
+                           AdornmentIcon="@Icons.Material.Security"/>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="6">
+            <MudTextField @bind-Value="@SpotifyCredentialsManager.ClientSecret"
+                           Label="Client Secret"
+                           Variant="Variant.Text"
+                           Adornment="Adornment.End"
+                           AdornmentIcon="@Icons.Material.Security"/>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="6">
+            <MudTextField @bind-Value="@SpotifyCredentialsManager.AccessToken" Label="Access Token" Variant="Variant.Text" Disabled="true"/>
+        </MudItem>
+
+        <MudItem xs="12" sm="6" md="6">
+            <MudTextField @bind-Value="@SpotifyCredentialsManager.RefreshToken" Label="Refresh Token" Variant="Variant.Text" Disabled="true"/>
+        </MudItem>
+
+        <MudItem xs="12" sm="12" md="12">
+            <MudButton OnClick="UpdateTokens" Variant="Variant.Filled" Color="Color.Primary">Update Token</MudButton>
+        </MudItem>
+    </MudGrid>
+</MudCard>
+
+@code {
+
+    private void UpdateTokens()
+    {
+        string clientId = SpotifyCredentialsManager.ClientId;
+
+        var loginRequest = new LoginRequest(GetRedirectUri(), clientId, LoginRequest.ResponseType.Code)
+        {
+            Scope = new[]
+            {
+                Scopes.UserReadEmail,
+                Scopes.PlaylistModifyPublic,
+                Scopes.PlaylistModifyPrivate,
+                Scopes.PlaylistReadPrivate
+            }
+        };
+
+        NavManager.NavigateTo(loginRequest.ToUri().ToString());
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        var uri = new Uri(NavManager.Uri);
+        string code = HttpUtility.ParseQueryString(uri.Query).Get("code");
+
+        if (code == null)
+            return;
+
+        var req = new AuthorizationCodeTokenRequest(SpotifyCredentialsManager.ClientId, SpotifyCredentialsManager.ClientSecret, code, GetRedirectUri());
+        var response = await new OAuthClient().RequestToken(req);
+
+        SpotifyCredentialsManager.AccessToken = response.AccessToken;
+        SpotifyCredentialsManager.RefreshToken = response.RefreshToken;
+
+        NavManager.NavigateTo("/settings");
+    }
+
+    private Uri GetRedirectUri()
+    {
+        string baseUrl = Environment.GetEnvironmentVariable("SPOTPG_BASE_URL");
+
+        if (baseUrl != null)
+            return new Uri($"{baseUrl}/settings");
+
+        var uri = new Uri(NavManager.Uri);
+        return new Uri(uri.GetLeftPart(UriPartial.Path));
+    }
+}

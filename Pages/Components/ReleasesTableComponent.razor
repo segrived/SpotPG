@@ -1,0 +1,29 @@
+﻿@using SpotPG.Models
+<MudTable Items="@Releases" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" RowsPerPage="25">
+    <HeaderContent>
+        <MudTh>Cover</MudTh>
+        <MudTh>Artists</MudTh>
+        <MudTh>Title</MudTh>
+        <MudTh>Date</MudTh>
+        <MudTh>Uri</MudTh>
+    </HeaderContent>
+
+    <RowTemplate>
+        <MudTd DataLabel="Cover">
+            <img src="@context.CoverUrl" alt="cover" style="width: 50px; height: 50px;"/>
+        </MudTd>
+        <MudTd DataLabel="Artists">@String.Join(", ", context.Artists)</MudTd>
+        <MudTd DataLabel="ReleaseName">@context.ReleaseName</MudTd>
+        <MudTd DataLabel="Date">@context.ReleaseDate.ToString("dd/MM/yyyy")</MudTd>
+        <MudTd DataLabel="Uri"><a href="@context.Uri">Open</a></MudTd>
+    </RowTemplate>
+
+    <PagerContent>
+        <MudTablePager />
+    </PagerContent>
+</MudTable>
+
+@code {
+    [Parameter]
+    public IEnumerable<SpotifyAlbum> Releases { get; set; }
+}

@@ -1,0 +1,124 @@
+﻿@page "/"
+@using SpotPG.Utils
+@using SpotPG.Services.Abstractions
+@using SpotPG.Services
+@using SpotPG.Models
+@inject ISpotifyMetaInfoFetcherService SpotifyMetaInfoFetcherService
+@inject ISpotifySearchQueryGeneratorService SearchQueryGeneratorService
+@inject ISnackbar Snackbar
+
+@if (sourceReleasesList == null)
+{
+    <SourceSelectorComponent OnReleasesInfoReceived="ReleasesInfoReceived" />
+}
+
+@if (inProcess)
+{
+    <div class="mt-5 align-content-center text-center justify-content-center">
+        <p><b>Processing:</b> @processingRelease.Artists - @processingRelease.Title (@processingRelease.Year)</p>
+        <MudProgressLinear Color="Color.Primary" Value="@(100 - processProgress)"/>
+    </div>
+}
+
+@if (!inProcess && spotifyReleasesList != null)
+{
+    <MudTabs Elevation="1" Border="true">
+        <MudTabPanel Text="Sources" BadgeData="@sourceReleasesList.Count" Icon="@Icons.Material.List">
+            <MudTable Items="@sourceReleasesList" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" RowsPerPage="100">
+                <HeaderContent>
+                    <MudTh>Artists</MudTh>
+                    <MudTh>Title</MudTh>
+                    <MudTh>Year</MudTh>
+                </HeaderContent>
+
+                <RowTemplate>
+                    <MudTd DataLabel="Artists">@context.Artists</MudTd>
+                    <MudTd DataLabel="Title">@context.Title</MudTd>
+                    <MudTd DataLabel="Year">@context.Year</MudTd>
+                </RowTemplate>
+
+                <PagerContent>
+                    <MudTablePager />
+                </PagerContent>
+            </MudTable>
+        </MudTabPanel>
+
+        @* Tab per release type (album/single/compilation) *@
+        @foreach (var group in spotifyReleasesList.GroupBy(a => a.ReleaseType))
+        {
+            <MudTabPanel Text="@group.Key.ToString()" BadgeData="group.Count()" Icon="@Icons.Material.Album" BadgeColor="Color.Success">
+                <ReleasesTableComponent Releases="@group"/>
+            </MudTabPanel>
+        }
+
+        <MudTabPanel Text="Generator" Icon="@Icons.Material.RunCircle">
+            <PlaylistCreatorComponent Releases="@spotifyReleasesList" />
+        </MudTabPanel>
+    </MudTabs>
+}
+
+@code {
+
+    private bool inProcess;
+    private ReleaseInfo processingRelease;
+
+    private double processProgress;
+
+    private IList<ReleaseInfo> sourceReleasesList;
+    private IList<SpotifyAlbum> spotifyReleasesList;
+
+    private async Task ReleasesInfoReceived(IEnumerable<ReleaseInfo> releases)
+    {
+        inProcess = true;
+
+        // Remove duplicates from matches list
+        var list = releases?.Distinct().ToList();
+
+        if (list == null || !list.Any())
+        {
+            Snackbar.Add("Empty release list received. Please try another parameters set", Severity.Error);
+            inProcess = false;
+            return;
+        }
+
+        sourceReleasesList = list;
+
+        spotifyReleasesList = new List<SpotifyAlbum>();
+
+        foreach ((var release, int progress) in sourceReleasesList.ProgressForEach())
+        {
+            processingRelease = release;
+
+            var parameters = new QueryGeneratorParameters(true);
+            string searchQuery = SearchQueryGeneratorService.Generate(release, parameters);
+            var albumResult = await SpotifyMetaInfoFetcherService.FindReleaseAsync(searchQuery);
+
+            if (albumResult.IsFailed)
+                continue;
+
+            spotifyReleasesList.Add(albumResult.Value);
+            processProgress = progress;
+            StateHasChanged();
+        }
+
+        if (!spotifyReleasesList.Any())
+        {
+            Snackbar.Add("No releases was matched on Spotify", Severity.Error);
+            inProcess = false;
+            return;
+        }
+
+        inProcess = false;
+    }
+}
+
+<style>
+.mud-tab {
+    /* https://github.com/Garderoben/MudBlazor/issues/187 */
+    width: 200px !important;
+}
+
+.mud-tabs-panels {
+    margin-top: 15px;
+}
+</style>

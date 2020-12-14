@@ -1,0 +1,81 @@
+﻿@page "/playlists"
+@using SpotPG.Services.Abstractions
+@using SpotPG.Models
+@inject ISpotifyPlaylistsManagerService SpotifyPlaylistsManagerService
+
+<div class="p-3 mb-3">
+    @if (isLoading)
+    {
+        <h3 class="text-center">Loading data...</h3>
+    }
+    else if (generatedPlaylists != null)
+    {
+        @if (generatedPlaylists.Count > 0)
+        {
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudTable Items="@generatedPlaylists" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" RowsPerPage="100">
+                        <HeaderContent>
+                            <MudTh>CoverUrl</MudTh>
+                            <MudTh>Name</MudTh>
+                            <MudTh>Uri</MudTh>
+                        </HeaderContent>
+
+                        <RowTemplate>
+                            <MudTd DataLabel="Cover">
+                                <img src="@context.CoverUrl" alt="cover" style="width: 50px; height: 50px;"/>
+                            </MudTd>
+                            <MudTd DataLabel="Title">@context.Name</MudTd>
+                            <MudTd DataLabel="Year"><a href="@context.Uri">Open</a></MudTd>
+                        </RowTemplate>
+
+                        <PagerContent>
+                            <MudTablePager/>
+                        </PagerContent>
+                    </MudTable>
+                </MudItem>
+
+                <MudItem xs="12">
+                    <MudButton OnClick="DeleteGeneratedPlaylists" Variant="Variant.Filled" StartIcon="@Icons.Material.Delete" Color="Color.Error">
+                        Delete all generated playlists
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
+
+        }
+        else
+        {
+            <MudCard>
+                <MudCardContent>
+                    <MudText Align="Align.Center">No generated playlists found</MudText>
+                </MudCardContent>
+            </MudCard>
+        }
+    }
+</div>
+
+@code {
+    private bool isLoading;
+    private IList<SpotifyPlaylist> generatedPlaylists;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+        generatedPlaylists = (await SpotifyPlaylistsManagerService.GetGeneratedPlaylists()).ToList();
+        isLoading = false;
+    }
+
+    private async Task DeleteGeneratedPlaylists()
+    {
+        var copy = generatedPlaylists.ToList();
+
+        foreach (var playlist in copy)
+        {
+            if (!await SpotifyPlaylistsManagerService.DeletePlaylistAsync(playlist.Id))
+                continue;
+
+            generatedPlaylists.Remove(playlist);
+            StateHasChanged();
+        }
+    }
+}

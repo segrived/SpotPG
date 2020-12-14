@@ -1,0 +1,79 @@
+﻿@inherits LayoutComponentBase
+@inject NavigationManager NavigationManager
+
+<MudThemeProvider Theme="currentTheme"/>
+<MudDialogProvider FullWidth="true" MaxWidth="MaxWidth.ExtraSmall"/>
+<MudSnackbarProvider/>
+
+<MudLayout>
+    <MudAppBar Elevation="25">
+
+        <MudText Typo="Typo.h6" Class="mudblazor-appbar-brand-text">SpotPG</MudText>
+
+        <MudTooltip Text="Home">
+            <MudIconButton Icon="@Icons.Material.Home" Color="Color.Inherit"  Link="/" />
+        </MudTooltip>
+
+        <MudTooltip Text="Playlists Manager">
+            <MudIconButton Icon="@Icons.Material.PlaylistAdd" Color="Color.Inherit"  Link="/playlists" />
+        </MudTooltip>
+
+        <MudTooltip Text="Settings">
+            <MudIconButton Icon="@Icons.Material.Settings" Color="Color.Inherit" Link="/settings" />
+        </MudTooltip>
+
+        <MudAppBarSpacer/>
+
+        <MudTooltip Text="Toggle theme">
+            <MudIconButton Icon="@Icons.Material.Brightness4" Color="Color.Inherit" OnClick="@(_ => DarkMode())"/>
+        </MudTooltip>
+
+        <MudTooltip Text="GitHub">
+            <MudIconButton Icon="@Icons.Custom.GitHub" Color="Color.Inherit" Link="https://github.com/segrived/SpotPG" Target="_blank"/>
+        </MudTooltip>
+    </MudAppBar>
+
+    <MudMainContent Class="mudblazor-main-content">
+        <div class="p-5">@Body</div>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    protected override void OnInitialized()
+    {
+        currentTheme = defaultTheme;
+    }
+
+    void DarkMode() => currentTheme = currentTheme == defaultTheme ? darkTheme : defaultTheme;
+
+    MudTheme currentTheme = new();
+
+    readonly MudTheme defaultTheme = new()
+    {
+        Palette = new Palette
+        {
+            Black = "#272c34"
+        }
+    };
+
+    readonly MudTheme darkTheme = new()
+    {
+        Palette = new Palette
+        {
+            Black = "#27272f",
+            Background = "#32333d",
+            BackgroundGrey = "#27272f",
+            Surface = "#373740",
+            DrawerBackground = "#27272f",
+            DrawerText = "rgba(255,255,255, 0.50)",
+            AppbarBackground = "#27272f",
+            AppbarText = "rgba(255,255,255, 0.70)",
+            TextPrimary = "rgba(255,255,255, 0.70)",
+            TextSecondary = "rgba(255,255,255, 0.50)",
+            ActionDefault = "#adadb1",
+            ActionDisabled = "rgba(255,255,255, 0.26)",
+            ActionDisabledBackground = "rgba(255,255,255, 0.12)",
+            DrawerIcon = "rgba(255,255,255, 0.50)"
+        }
+    };
+}
