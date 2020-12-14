@@ -3,7 +3,7 @@
 @inject ISceneReleaseNameParserService ParserService
 
 <div class="mb-2">
-    <MudTextField T="string" Variant="Variant.Text" Text="@content" Lines="20"/>
+    <MudTextField T="string" Variant="Variant.Text" @bind-Text="@content" Lines="20"/>
 </div>
 
 <div>
