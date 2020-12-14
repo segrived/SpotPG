@@ -93,8 +93,15 @@
         var progressInst = new Progress<int>(v => SetProgress(v, "Creating playlist…"));
         playlistInformation = await SpotifyPlaylistsManagerService.CreatePlaylistAsync(GetPlaylistName(), allTracksFromAlbums, progressInst);
 
-        await ClipboardService.WriteTextAsync(playlistInformation?.ExternalUrl);
-        Snackbar.Add("Playlist URL was copied into clipboard", Severity.Info);
+        try
+        {
+            await ClipboardService.WriteTextAsync(playlistInformation?.ExternalUrl);
+            Snackbar.Add("Playlist URL was copied into clipboard", Severity.Info);
+        }
+        catch (JSException)
+        {
+            Snackbar.Add("playlist URL was not copied into clipboard, please copy URL manually", Severity.Error);
+        }
 
         createdPlaylistUri = playlistInformation?.ExternalUrl;
         inProcessNow = false;
