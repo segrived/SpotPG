@@ -21,6 +21,13 @@
     </div>
 }
 
+@if (createdPlaylistUri != null)
+{
+    <MudAlert Class="mb-3" Severity="Severity.Success">
+        Spotify playlist was successfully created: <a href="@createdPlaylistUri">@createdPlaylistUri</a>
+    </MudAlert>
+}
+
 @if (allTracksFromAlbums != null)
 {
     <MudGrid>
@@ -53,6 +60,7 @@
 
     private List<SpotifyTrack> allTracksFromAlbums;
     private SpotifyPlaylist playlistInformation;
+    private string createdPlaylistUri;
 
     private bool IsPlaylistCreationDisabled => Releases == null || !Releases.Any();
 
@@ -88,6 +96,7 @@
         await ClipboardService.WriteTextAsync(playlistInformation?.ExternalUrl);
         Snackbar.Add("Playlist URL was copied into clipboard", Severity.Info);
 
+        createdPlaylistUri = playlistInformation?.ExternalUrl;
         inProcessNow = false;
     }
 
