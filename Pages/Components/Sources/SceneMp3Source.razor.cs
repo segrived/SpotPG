@@ -6,6 +6,7 @@ using System.Net.Http;
 using System.Threading.Tasks;
 using AngleSharp;
 using AngleSharp.Dom;
+using FluentResults;
 using SpotPG.Services;
 
 namespace SpotPG.Pages.Components.Sources
@@ -21,10 +22,14 @@ namespace SpotPG.Pages.Components.Sources
             this.httpClient = new HttpClient {BaseAddress = new Uri(BASE_HOST)};
         }
 
-        private async Task<IEnumerable<ReleaseInfo>> GetReleaseNamesAsync(DateTime dateParam)
+        private async Task<Result<IEnumerable<ReleaseInfo>>> GetReleaseNamesAsync(DateTime dateParam)
         {
             string url = GenerateUrl(dateParam);
             string pageContent = await this.httpClient.GetStringAsync(url);
+
+            // Special case: https://github.com/segrived/SpotPG/issues/4
+            if (pageContent == "<h1>Establishing a Database Connection</h1>")
+                return Result.Fail("scenemp3.org server is not available");
 
             var config = Configuration.Default;
             var context = BrowsingContext.New(config);
@@ -47,7 +52,8 @@ namespace SpotPG.Pages.Components.Sources
             return linksList.Select(l => l.InnerHtml.Trim())
                 .Select(name => this.ParserService.Parse(name))
                 .Where(r => r.IsSuccess)
-                .Select(r => r.Value);
+                .Select(r => r.Value)
+                .ToResult();
         }
 
         private static string GenerateUrl(DateTime date) => $"date/{date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture)}";
