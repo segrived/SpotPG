@@ -15,10 +15,10 @@
 
 @if (inProcessNow)
 {
-    <div class="mt-5 align-content-center text-center justify-content-center">
+    <MudText Align="Align.Center">
         <p><b>@progressString</b></p>
-        <MudProgressLinear Color="Color.Primary" Value="@(100 - progressPercent)" />
-    </div>
+        <MudProgressLinear Color="Color.Primary" Value="@(100 - progressPercent)"/>
+    </MudText>
 }
 
 @if (createdPlaylistUri != null)
