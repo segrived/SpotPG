@@ -8,9 +8,37 @@
 
 @if (allTracksFromAlbums == null)
 {
-    <MudButton OnClick="CreatePlaylist" Disabled="@inProcessNow" Variant="Variant.Filled" EndIcon="@Icons.Material.Create" Color="Color.Primary">
-        Create playlist
-    </MudButton>
+    <MudContainer MaxWidth="MaxWidth.Small">
+        <MudCard Class="p-3">
+            <MudGrid>
+                <MudItem xs="12">
+                    <MudSelect Label="Sort releases" @bind-Value="playlistCreationOptions.SortBy">
+                        <MudSelectItem Value="@SortMode.ByAlbum">Artist</MudSelectItem>
+                        <MudSelectItem Value="@SortMode.ByReleaseName">Title</MudSelectItem>
+                        <MudSelectItem Value="@SortMode.ByReleaseDate">Release Date</MudSelectItem>
+                    </MudSelect>
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <MudSwitch @bind-Checked="@playlistCreationOptions.IncludeAlbums" Color="Color.Primary" Label="Albums"/>
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <MudSwitch @bind-Checked="@playlistCreationOptions.IncludeCompilations" Color="Color.Primary" Label="Compilations"/>
+                </MudItem>
+
+                <MudItem xs="12" md="4">
+                    <MudSwitch @bind-Checked="@playlistCreationOptions.IncludeSingles" Color="Color.Primary" Label="Singles"/>
+                </MudItem>
+
+                <MudItem xs="12" md="12" Class="w-100">
+                    <MudButton OnClick="CreatePlaylist" Disabled="@inProcessNow" Variant="Variant.Filled" EndIcon="@Icons.Material.Create" Color="Color.Primary">
+                        Create playlist
+                    </MudButton>
+                </MudItem>
+            </MudGrid>
+        </MudCard>
+    </MudContainer>
 }
 
 @if (inProcessNow)
@@ -62,6 +90,8 @@
     private SpotifyPlaylist playlistInformation;
     private string createdPlaylistUri;
 
+    PlaylistCreationOptions playlistCreationOptions = new();
+
     private bool IsPlaylistCreationDisabled => Releases == null || !Releases.Any();
 
     private string GetPlaylistName() => $"Generated {DateTime.Now:yyyy/MM/dd HH:mm:ss}";
@@ -76,7 +106,9 @@
 
         allTracksFromAlbums = new List<SpotifyTrack>();
 
-        foreach ((var album, int getAlbumProgress) in Releases.ToList().ProgressForEach())
+        var processedRelease = ProcessReleases(Releases.ToList(), playlistCreationOptions);
+
+        foreach ((var album, int getAlbumProgress) in processedRelease.ProgressForEach())
         {
             SetProgress(getAlbumProgress, $"Processing {String.Join(",", album.Artists)} - {album.ReleaseName}…");
 
