@@ -30,7 +30,6 @@ namespace SpotPG
 
             services.AddSingleton<ISceneReleaseNameParserService, SceneReleaseNameParserService>();
             services.AddSingleton<ISpotifySearchQueryGeneratorService, SpotifySearchQueryGeneratorService>();
-            services.AddSingleton<ISpotifyMetadataCacheService, SpotifyMetadataCacheService>();
 
             services.AddMudBlazorDialog();
             services.AddMudBlazorSnackbar();
