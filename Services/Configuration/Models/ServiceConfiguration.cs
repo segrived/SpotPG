@@ -9,6 +9,6 @@ namespace SpotPG.Services.Configuration.Models
     public class ServiceConfiguration : IServiceConfiguration
     {
         [DataMember(Name = "spotifyAccess")]
-        public SpotifyAccessConfiguration SpotifyAccess { get; set; }
+        public SpotifyAccessConfiguration SpotifyAccess { get; set; } = new();
     }
 }
