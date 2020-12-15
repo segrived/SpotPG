@@ -26,6 +26,7 @@ namespace SpotPG
             services.AddSingleton<ISpotifyClientProviderService, SpotifyClientProviderService>();
             services.AddSingleton<ISpotifyMetaInfoFetcherService, SpotifyMetaInfoFetcherService>();
             services.AddSingleton<ISpotifyPlaylistsManagerService, SpotifyPlaylistsManagerService>();
+            services.AddSingleton<ISpotifyConnectionStateProviderService, SpotifyConnectionStateProviderService>();
 
             services.AddSingleton<ISceneReleaseNameParserService, SceneReleaseNameParserService>();
             services.AddSingleton<ISpotifySearchQueryGeneratorService, SpotifySearchQueryGeneratorService>();
