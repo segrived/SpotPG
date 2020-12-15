@@ -1,13 +1,14 @@
 ﻿@using SpotPG.Utils
 
-<MudTextField @bind-Value="Value"
-               Label="@Label"
-               Variant="@Variant"
-               ReadOnly="@Helpers.HasEnv(EnvVariableName)"
-               Class="@GetHelperClass(EnvVariableName)"
-               HelperText="@GetHelperText(EnvVariableName, Label)"
-               Adornment="@Adornment"
-               AdornmentIcon="@AdornmentIcon" />
+<MudTextField Value="@Value"
+              ValueChanged="@ValueChanged"
+              Label="@Label"
+              Variant="@Variant"
+              ReadOnly="@Helpers.HasEnv(EnvVariableName)"
+              Class="@GetHelperClass(EnvVariableName)"
+              HelperText="@GetHelperText(EnvVariableName, Label)"
+              Adornment="@Adornment"
+              AdornmentIcon="@AdornmentIcon" />
 
 @code {
     [Parameter]
