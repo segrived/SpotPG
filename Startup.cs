@@ -6,7 +6,7 @@ using MudBlazor;
 using MudBlazor.Services;
 using SpotPG.Services;
 using SpotPG.Services.Abstractions;
-using SpotPG.Services.SpotifyCredentialsManager;
+using SpotPG.Services.Configuration;
 
 namespace SpotPG
 {
@@ -23,9 +23,7 @@ namespace SpotPG
             services.AddSingleton<IConfigurationProviderService>(_ => ConfigurationProviderService.Instance);
             services.AddSingleton<IServiceConfiguration>(_ => ConfigurationProviderService.Instance.Config);
 
-            services.AddSingleton<ISpotifyCredentialsManager, SpotifyCredentialsManager>();
             services.AddSingleton<ISpotifyClientProviderService, SpotifyClientProviderService>();
-
             services.AddSingleton<ISpotifyMetaInfoFetcherService, SpotifyMetaInfoFetcherService>();
             services.AddSingleton<ISpotifyPlaylistsManagerService, SpotifyPlaylistsManagerService>();
 
