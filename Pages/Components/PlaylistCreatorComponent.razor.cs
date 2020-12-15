@@ -23,6 +23,7 @@ namespace SpotPG.Pages.Components
                 SortMode.ByArtist      => releases.OrderBy(r => String.Join(", ", r.Artists)).ToList(),
                 SortMode.ByReleaseName => releases.OrderBy(r => r.ReleaseName).ToList(),
                 SortMode.ByReleaseDate => releases.OrderBy(r => r.ReleaseDate).ToList(),
+                SortMode.Random        => releases.OrderBy(_ => Guid.NewGuid()).ToList(),
                 var _ => releases
             };
         }
@@ -31,7 +32,8 @@ namespace SpotPG.Pages.Components
         {
             ByArtist,
             ByReleaseName,
-            ByReleaseDate
+            ByReleaseDate,
+            Random
         }
 
         private class PlaylistCreationOptions
