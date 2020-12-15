@@ -17,11 +17,18 @@ else if (generatedPlaylists?.Count > 0)
 {
     <MudGrid>
         <MudItem xs="12">
-            <MudTable Items="@generatedPlaylists" Dense="true" Hover="true" Breakpoint="Breakpoint.Sm" RowsPerPage="100">
+            <MudTable
+                      @bind-SelectedItems="@selectedPlaylists"
+                      Items="@generatedPlaylists"
+                      Dense="true"
+                      Hover="true"
+                      Breakpoint="Breakpoint.Sm"
+                      MultiSelection="true"
+                      RowsPerPage="100">
                 <HeaderContent>
-                    <MudTh>CoverUrl</MudTh>
+                    <MudTh Style="width: 50px;">Cover</MudTh>
                     <MudTh>Name</MudTh>
-                    <MudTh>Uri</MudTh>
+                    <MudTh Style="width: 50px;">Actions</MudTh>
                 </HeaderContent>
 
                 <RowTemplate>
@@ -29,7 +36,7 @@ else if (generatedPlaylists?.Count > 0)
                         <img src="@context.CoverUrl" alt="cover" style="width: 50px; height: 50px;"/>
                     </MudTd>
                     <MudTd DataLabel="Title">@context.Name</MudTd>
-                    <MudTd DataLabel="Year"><a href="@context.Uri">Open</a></MudTd>
+                    <MudTd DataLabel="Actions"><a href="@context.Uri">Open</a></MudTd>
                 </RowTemplate>
 
                 <PagerContent>
@@ -38,11 +45,14 @@ else if (generatedPlaylists?.Count > 0)
             </MudTable>
         </MudItem>
 
-        <MudItem xs="12">
-            <MudButton OnClick="DeleteGeneratedPlaylists" Variant="Variant.Filled" StartIcon="@Icons.Material.Delete" Color="Color.Error">
-                Delete all generated playlists
-            </MudButton>
-        </MudItem>
+        @if (selectedPlaylists.Count > 0)
+        {
+            <MudItem xs="12">
+                <MudButton OnClick="DeleteSelectedPlaylists" Variant="Variant.Filled" StartIcon="@Icons.Material.Delete" Color="Color.Error">
+                    Delete selected playlists (@selectedPlaylists.Count items)
+                </MudButton>
+            </MudItem>
+        }
     </MudGrid>
 }
 else
@@ -57,6 +67,8 @@ else
 @code {
     private bool isLoading;
     private IList<SpotifyPlaylist> generatedPlaylists;
+    // ReSharper disable once FieldCanBeMadeReadOnly.Local
+    private HashSet<SpotifyPlaylist> selectedPlaylists = new();
     private SpotifyClientConnectionState? spotifyConnectionState;
 
     protected override async Task OnInitializedAsync()
@@ -71,11 +83,9 @@ else
         isLoading = false;
     }
 
-    private async Task DeleteGeneratedPlaylists()
+    private async Task DeleteSelectedPlaylists()
     {
-        var copy = generatedPlaylists.ToList();
-
-        foreach (var playlist in copy)
+        foreach (var playlist in selectedPlaylists)
         {
             if (!await SpotifyPlaylistsManager.DeletePlaylistAsync(playlist.Id))
                 continue;
@@ -84,4 +94,5 @@ else
             StateHasChanged();
         }
     }
+
 }
