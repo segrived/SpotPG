@@ -31,12 +31,12 @@
     {
         base.OnInitialized();
 
-        fragments.Add("Scene: m2v.ru", CreateDynamicComponent<M2vSource>());
-        fragments.Add("Scene: nfodb.ru", CreateDynamicComponent<NfoDbSource>());
-        fragments.Add("Scene: scenemp3.org", CreateDynamicComponent<SceneMp3Source>());
-        fragments.Add("Scene: manual", CreateDynamicComponent<ManualSource>());
+        fragments.Add("Scene: M2V.ru", CreateDynamicComponent<M2vSource>());
+        fragments.Add("Scene: NfoDB.ru", CreateDynamicComponent<NfoDbSource>());
+        fragments.Add("Scene: SceneMP3.org", CreateDynamicComponent<SceneMp3Source>());
+        fragments.Add("Scene: Manual", CreateDynamicComponent<ManualSource>());
 
-        activeFragment = fragments["Scene: m2v.ru"];
+        activeFragment = fragments["Scene: M2V.ru"];
     }
 
     RenderFragment CreateDynamicComponent<T>() => builder => {
