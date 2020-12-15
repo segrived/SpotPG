@@ -4,16 +4,20 @@
 
 <MudGrid>
     <MudItem xs="12">
-        <MudSelect @bind-Value="@genre" Label="Genre" T="string" Dense="true" MaxHeight="200" Disabled="inProcess">
-            @foreach (string genreItem in Genres)
-            {
-                <MudSelectItem T="string" Value="@genreItem">@genreItem</MudSelectItem>
-            }
-        </MudSelect>
+        <MudDatePicker DateFormat="yyyy-MM-dd" @bind-Date="@date" DisableToolbar="true" Disabled="inProcess" Label="Release Date" Class="w-100" />
     </MudItem>
 
     <MudItem xs="12">
-        <MudDatePicker DateFormat="yyyy-MM-dd" @bind-Date="@date" DisableToolbar="true" Disabled="inProcess" Label="Release Date" Class="w-100" />
+        <MudAutocomplete @bind-Value="genre"
+                          T="string"
+                          Label="Genre"
+                          Dense="true"
+                          MaxHeight="400"
+                          Disabled="inProcess"
+                          SearchFunc="@SearchGenre"
+                          ResetValueOnEmptyText="true"
+                          AdornmentIcon="@Icons.Material.List"
+                          Adornment="Adornment.Start"/>
     </MudItem>
 
     <MudItem xs="12">
@@ -28,13 +32,13 @@
 
     // ReSharper disable once FieldCanBeMadeReadOnly.Local
     private DateTime? date = DateTime.UtcNow.Date;
-    private string genre = ALL_GENRES_ITEM;
+    private string genre = "";
 
     private async Task GetReleases()
     {
         inProcess = true;
 
-        var result = await GetReleaseNamesAsync(date ?? DateTime.UtcNow, genre == ALL_GENRES_ITEM ? null : genre);
+        var result = await GetReleaseNamesAsync(date ?? DateTime.UtcNow, String.IsNullOrEmpty(genre) ? null : genre);
         await OnReleaseListLoaded.InvokeAsync(result);
 
         inProcess = false;
