@@ -8,7 +8,7 @@
             <MudSelectItem T="int" Value="300">300</MudSelectItem>
         </MudSelect>
 
-        <MudSelect @bind-Value="@selectedGenre" Label="Genre" T="string" Dense="true" MaxHeight="200" Disabled="inProcess">
+        <MudSelect @bind-Value="@selectedGenre" Label="Genre" T="string" Dense="true" MaxHeight="500" Disabled="inProcess">
             @foreach ((string _, string name) in Genres)
             {
                 <MudSelectItem T="string" Value="@name">@name</MudSelectItem>
