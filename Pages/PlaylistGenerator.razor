@@ -3,13 +3,21 @@
 @using SpotPG.Services.Abstractions
 @using SpotPG.Services
 @using SpotPG.Models
-@inject ISpotifyMetaInfoFetcherService SpotifyMetaInfoFetcherService
-@inject ISpotifySearchQueryGeneratorService SearchQueryGeneratorService
+@inject ISpotifyMetaInfoFetcherService SpotifyMetaInfoFetcher
+@inject ISpotifySearchQueryGeneratorService SearchQueryGenerator
+@inject ISpotifyConnectionStateProviderService SpotifyConnectionStateProvider
 @inject ISnackbar Snackbar
 
-@if (sourceReleasesList == null)
+@if (spotifyConnectionState != null && sourceReleasesList == null)
 {
-    <SourceSelectorComponent OnReleasesInfoReceived="ReleasesInfoReceived" />
+    @if (spotifyConnectionState != SpotifyClientConnectionState.Connected)
+    {
+        <MudAlert Severity="Severity.Error">Spotify client error, please check connection settings before processing</MudAlert>
+    }
+    else
+    {
+        <SourceSelectorComponent OnReleasesInfoReceived="ReleasesInfoReceived"/>
+    }
 }
 
 @if (inProcess)
@@ -66,6 +74,13 @@
 
     private IList<ReleaseInfo> sourceReleasesList;
     private IList<SpotifyAlbum> spotifyReleasesList;
+    private SpotifyClientConnectionState? spotifyConnectionState;
+
+    protected override async Task OnInitializedAsync()
+    {
+        await base.OnInitializedAsync();
+        spotifyConnectionState = await SpotifyConnectionStateProvider.GetSpotifyConnectionStatusAsync();
+    }
 
     private async Task ReleasesInfoReceived(IEnumerable<ReleaseInfo> releases)
     {
@@ -90,8 +105,8 @@
             processingRelease = release;
 
             var parameters = new QueryGeneratorParameters(true);
-            string searchQuery = SearchQueryGeneratorService.Generate(release, parameters);
-            var albumResult = await SpotifyMetaInfoFetcherService.FindReleaseAsync(searchQuery);
+            string searchQuery = SearchQueryGenerator.Generate(release, parameters);
+            var albumResult = await SpotifyMetaInfoFetcher.FindReleaseAsync(searchQuery);
 
             if (albumResult.IsFailed)
                 continue;
