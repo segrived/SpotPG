@@ -7,57 +7,57 @@
 @inject IConfigurationProviderService ConfigurationProvider
 @inject ISnackbar Snackbar
 
-<MudCard Class="mb-2">
-    <MudGrid Class="p-3">
-        <MudItem xs="12" sm="12" md="12">
-            <h4 class="text-center">Spotify configuration</h4>
-        </MudItem>
+<MudContainer MaxWidth="MaxWidth.Medium">
+    <MudCard Class="mb-2" Outlined="true" Elevation="0">
+        <MudGrid Class="p-3">
+            <MudItem xs="12">
+                <EnvBasedSettingField @bind-Value="@ConfigurationProvider.Config.SpotifyAccess.ClientId"
+                                       Label="Client ID"
+                                       Variant="@Variant.Text"
+                                       EnvVariableName="SPOTPG_SPOTIFY_CLIENT_ID"
+                                       Adornment="Adornment.End"
+                                       AdornmentIcon="@Icons.Material.Security"/>
+            </MudItem>
 
-        <MudItem xs="12" sm="6" md="6">
-            <EnvBasedSettingField @bind-Value="@ConfigurationProvider.Config.SpotifyAccess.ClientId"
-                                   Label="Client ID"
-                                   Variant="@Variant.Text"
-                                   EnvVariableName="SPOTPG_SPOTIFY_CLIENT_ID" />
-        </MudItem>
+            <MudItem xs="12">
+                <EnvBasedSettingField @bind-Value="@ConfigurationProvider.Config.SpotifyAccess.ClientSecret"
+                                       Label="Client Secret"
+                                       Variant="@Variant.Text"
+                                       EnvVariableName="SPOTPG_SPOTIFY_SECRET"
+                                       Adornment="Adornment.End"
+                                       AdornmentIcon="@Icons.Material.Security"/>
+            </MudItem>
 
-        <MudItem xs="12" sm="6" md="6">
-            <EnvBasedSettingField @bind-Value="@ConfigurationProvider.Config.SpotifyAccess.ClientSecret"
-                                   Label="Client Secret"
-                                   Variant="@Variant.Text"
-                                   EnvVariableName="SPOTPG_SPOTIFY_SECRET" />
-        </MudItem>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="@ConfigurationProvider.Config.SpotifyAccess.AccessToken"
+                               Label="Access Token"
+                               Variant="Variant.Text"
+                               Disabled="true"
+                               Adornment="Adornment.End"
+                               AdornmentIcon="@Icons.Material.Security"/>
+            </MudItem>
 
-        <MudItem xs="12" sm="6" md="6">
-            <MudTextField @bind-Value="@ConfigurationProvider.Config.SpotifyAccess.AccessToken"
-                           Label="Access Token"
-                           Variant="Variant.Text"
-                           Disabled="true"
-                           Adornment="Adornment.End"
-                           AdornmentIcon="@Icons.Material.Security"/>
-        </MudItem>
+            <MudItem xs="12">
+                <MudTextField @bind-Value="@ConfigurationProvider.Config.SpotifyAccess.RefreshToken"
+                               Label="Refresh Token"
+                               Variant="Variant.Text"
+                               Disabled="true"
+                               Adornment="Adornment.End"
+                               AdornmentIcon="@Icons.Material.Security"/>
+            </MudItem>
 
-        <MudItem xs="12" sm="6" md="6">
-            <MudTextField @bind-Value="@ConfigurationProvider.Config.SpotifyAccess.RefreshToken"
-                           Label="Refresh Token"
-                           Variant="Variant.Text"
-                           Disabled="true"
-                           Adornment="Adornment.End"
-                           AdornmentIcon="@Icons.Material.Security"/>
-        </MudItem>
+            <MudItem xs="12" sm="12" md="12">
+                <MudButton OnClick="UpdateTokens" Variant="Variant.Filled" Color="Color.Default">Update tokens</MudButton>
+            </MudItem>
+        </MudGrid>
+    </MudCard>
 
-        <MudItem xs="12" sm="12" md="12">
-            <MudButton OnClick="UpdateTokens" Variant="Variant.Filled" Color="Color.Default">Update token</MudButton>
-        </MudItem>
-    </MudGrid>
-</MudCard>
-
-<MudCard>
     <MudGrid Class="p-3">
         <MudItem xs="12" sm="12" md="12">
             <MudButton OnClick="SaveSettings" Variant="Variant.Filled" Color="Color.Primary">Save settings</MudButton>
         </MudItem>
     </MudGrid>
-</MudCard>
+</MudContainer>
 
 
 @code {
@@ -95,7 +95,7 @@
 
         var loginRequest = new LoginRequest(GetRedirectUri(), ConfigurationProvider.Config.SpotifyAccess.ClientId, LoginRequest.ResponseType.Code)
         {
-            Scope = new[] { Scopes.UserReadEmail, Scopes.PlaylistModifyPublic, Scopes.PlaylistModifyPrivate, Scopes.PlaylistReadPrivate }
+            Scope = new[] {Scopes.UserReadEmail, Scopes.PlaylistModifyPublic, Scopes.PlaylistModifyPrivate, Scopes.PlaylistReadPrivate}
         };
 
         NavManager.NavigateTo(loginRequest.ToUri().ToString());
