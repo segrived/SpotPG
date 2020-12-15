@@ -1,25 +1,22 @@
 ﻿@using SpotPG.Services
 @using SpotPG.Pages.Components.Sources
+
 <MudGrid>
-    <MudItem xs="12" md="12">
-        <MudPaper Class="d-flex py-2 px-1" Elevation="0">
-            <MudPaper Class="flex-grow-0 flex-shrink-0 pa-2 mx-2 order-1" Elevation="0">
+    <MudItem xs="12">
+        <MudPaper Class="d-flex flex-wrap py-2 px-1" Elevation="0">
+            <MudPaper Class="flex-grow-0 flex-shrink-0 pa-2 mx-2 order-1 p-2">
                 <MudList Clickable="true">
-                    @foreach (string fragmentKey in fragments.Keys)
+                    @foreach ((string key, var value) in fragments)
                     {
-                        <MudListItem Text="@fragmentKey" Icon="@Icons.Material.Source" OnClick="() => activeFragment = fragments[fragmentKey]"/>
-                        <MudDivider/>
+                        <MudListItem Class="@GetElementClass(value)" Text="@key" Icon="@Icons.Material.Source" OnClick="() => activeFragment = fragments[key]"/>
                     }
                 </MudList>
             </MudPaper>
 
-            <MudPaper Class="flex-grow-1 flex-shrink-0 pa-2 mx-2 order-2" Elevation="0">
-                @activeFragment
-            </MudPaper>
+            <MudPaper Class="flex-grow-1 flex-shrink-0 pa-2 mx-2 order-2">@activeFragment</MudPaper>
         </MudPaper>
     </MudItem>
 </MudGrid>
-
 
 @code {
 
@@ -47,4 +44,7 @@
         builder.AddAttribute(1, "OnReleaseListLoaded", EventCallback.Factory.Create<IEnumerable<ReleaseInfo>>(this, r => OnReleasesInfoReceived.InvokeAsync(r)));
         builder.CloseComponent();
     };
+
+    private string GetElementClass(RenderFragment f) => activeFragment == f ? "text-primary" : "";
+
 }
