@@ -20,7 +20,8 @@ namespace SpotPG
 
             services.AddScoped<IClipboardService, ClipboardService>();
 
-            services.AddSingleton<IDatabaseProviderService, LiteDbDatabaseProviderService>();
+            services.AddSingleton<IConfigurationProviderService>(_ => ConfigurationProviderService.Instance);
+            services.AddSingleton<IServiceConfiguration>(_ => ConfigurationProviderService.Instance.Config);
 
             services.AddSingleton<ISpotifyCredentialsManager, SpotifyCredentialsManager>();
             services.AddSingleton<ISpotifyClientProviderService, SpotifyClientProviderService>();
