@@ -26,8 +26,6 @@
 </MudGrid>
 
 @code {
-        private const string ALL_GENRES_ITEM = "All";
-
     private bool inProcess;
 
     // ReSharper disable once FieldCanBeMadeReadOnly.Local
@@ -46,5 +44,8 @@
 
     [Parameter]
     public EventCallback<IEnumerable<ReleaseInfo>> OnReleaseListLoaded { get; set; }
+
+    private static async Task<IEnumerable<string>> SearchGenre(string subStr)
+        => Genres.Where(g => g.Contains(subStr ?? "", StringComparison.InvariantCultureIgnoreCase));
 
 }
