@@ -2,64 +2,65 @@
 @using SpotPG.Services.Abstractions
 @using SpotifyAPI.Web
 @using System.Web
-@inject NavigationManager NavManager
-@inject ISpotifyCredentialsManager SpotifyCredentialsManager
 
-<MudCard Class="mb-2">
+@inject NavigationManager NavManager
+@inject IConfigurationProviderService ConfigurationProvider
+@inject ISnackbar Snackbar
+
+<MudContainer MaxWidth="MaxWidth.Medium">
+    <MudCard Class="mb-2" Outlined="true" Elevation="0">
+        <MudGrid Class="p-3">
+            <MudItem xs="12">
+                <EnvBasedSettingField @bind-Value="@ConfigurationProvider.Config.SpotifyAccess.ClientId"
+                                       Label="Client ID"
+                                       Variant="@Variant.Text"
+                                       EnvVariableName="SPOTPG_SPOTIFY_CLIENT_ID"
+                                       Adornment="Adornment.End"
+                                       AdornmentIcon="@Icons.Material.Security"/>
+            </MudItem>
+
+            <MudItem xs="12">
+                <EnvBasedSettingField @bind-Value="@ConfigurationProvider.Config.SpotifyAccess.ClientSecret"
+                                       Label="Client Secret"
+                                       Variant="@Variant.Text"
+                                       EnvVariableName="SPOTPG_SPOTIFY_CLIENT_SECRET"
+                                       Adornment="Adornment.End"
+                                       AdornmentIcon="@Icons.Material.Security"/>
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="@ConfigurationProvider.Config.SpotifyAccess.AccessToken"
+                               Label="Access Token"
+                               Variant="Variant.Text"
+                               Disabled="true"
+                               Adornment="Adornment.End"
+                               AdornmentIcon="@Icons.Material.Security"/>
+            </MudItem>
+
+            <MudItem xs="12">
+                <MudTextField @bind-Value="@ConfigurationProvider.Config.SpotifyAccess.RefreshToken"
+                               Label="Refresh Token"
+                               Variant="Variant.Text"
+                               Disabled="true"
+                               Adornment="Adornment.End"
+                               AdornmentIcon="@Icons.Material.Security"/>
+            </MudItem>
+
+            <MudItem xs="12" sm="12" md="12">
+                <MudButton OnClick="UpdateTokens" Variant="Variant.Filled" Color="Color.Default">Update tokens</MudButton>
+            </MudItem>
+        </MudGrid>
+    </MudCard>
+
     <MudGrid Class="p-3">
         <MudItem xs="12" sm="12" md="12">
-            <h4 class="text-center">Spotify configuration</h4>
-        </MudItem>
-
-        <MudItem xs="12" sm="6" md="6">
-            <MudTextField @bind-Value="@SpotifyCredentialsManager.ClientId"
-                           Label="Client ID"
-                           Variant="Variant.Text"
-                           Adornment="Adornment.End"
-                           AdornmentIcon="@Icons.Material.Security"/>
-        </MudItem>
-
-        <MudItem xs="12" sm="6" md="6">
-            <MudTextField @bind-Value="@SpotifyCredentialsManager.ClientSecret"
-                           Label="Client Secret"
-                           Variant="Variant.Text"
-                           Adornment="Adornment.End"
-                           AdornmentIcon="@Icons.Material.Security"/>
-        </MudItem>
-
-        <MudItem xs="12" sm="6" md="6">
-            <MudTextField @bind-Value="@SpotifyCredentialsManager.AccessToken" Label="Access Token" Variant="Variant.Text" Disabled="true"/>
-        </MudItem>
-
-        <MudItem xs="12" sm="6" md="6">
-            <MudTextField @bind-Value="@SpotifyCredentialsManager.RefreshToken" Label="Refresh Token" Variant="Variant.Text" Disabled="true"/>
-        </MudItem>
-
-        <MudItem xs="12" sm="12" md="12">
-            <MudButton OnClick="UpdateTokens" Variant="Variant.Filled" Color="Color.Primary">Update Token</MudButton>
+            <MudButton OnClick="SaveSettings" Variant="Variant.Filled" Color="Color.Primary">Save settings</MudButton>
         </MudItem>
     </MudGrid>
-</MudCard>
+</MudContainer>
+
 
 @code {
-
-    private void UpdateTokens()
-    {
-        string clientId = SpotifyCredentialsManager.ClientId;
-
-        var loginRequest = new LoginRequest(GetRedirectUri(), clientId, LoginRequest.ResponseType.Code)
-        {
-            Scope = new[]
-            {
-                Scopes.UserReadEmail,
-                Scopes.PlaylistModifyPublic,
-                Scopes.PlaylistModifyPrivate,
-                Scopes.PlaylistReadPrivate
-            }
-        };
-
-        NavManager.NavigateTo(loginRequest.ToUri().ToString());
-    }
 
     protected override async Task OnInitializedAsync()
     {
@@ -69,13 +70,35 @@
         if (code == null)
             return;
 
-        var req = new AuthorizationCodeTokenRequest(SpotifyCredentialsManager.ClientId, SpotifyCredentialsManager.ClientSecret, code, GetRedirectUri());
+        var req = new AuthorizationCodeTokenRequest(
+            ConfigurationProvider.Config.SpotifyAccess.ClientId,
+            ConfigurationProvider.Config.SpotifyAccess.ClientSecret,
+            code,
+            GetRedirectUri());
+
         var response = await new OAuthClient().RequestToken(req);
 
-        SpotifyCredentialsManager.AccessToken = response.AccessToken;
-        SpotifyCredentialsManager.RefreshToken = response.RefreshToken;
+        ConfigurationProvider.Config.SpotifyAccess.AccessToken = response.AccessToken;
+        ConfigurationProvider.Config.SpotifyAccess.RefreshToken = response.RefreshToken;
+        ConfigurationProvider.Save();
 
         NavManager.NavigateTo("/settings");
+    }
+
+    private void UpdateTokens()
+    {
+        if (String.IsNullOrEmpty(ConfigurationProvider.Config.SpotifyAccess.ClientId))
+        {
+            Snackbar.Add("SpotifyClientId is not specified", Severity.Error);
+            return;
+        }
+
+        var loginRequest = new LoginRequest(GetRedirectUri(), ConfigurationProvider.Config.SpotifyAccess.ClientId, LoginRequest.ResponseType.Code)
+        {
+            Scope = new[] {Scopes.UserReadEmail, Scopes.PlaylistModifyPublic, Scopes.PlaylistModifyPrivate, Scopes.PlaylistReadPrivate}
+        };
+
+        NavManager.NavigateTo(loginRequest.ToUri().ToString());
     }
 
     private Uri GetRedirectUri()
@@ -87,5 +110,11 @@
 
         var uri = new Uri(NavManager.Uri);
         return new Uri(uri.GetLeftPart(UriPartial.Path));
+    }
+
+    private void SaveSettings()
+    {
+        ConfigurationProvider.Save();
+        Snackbar.Add("Configuration was saved", Severity.Success);
     }
 }

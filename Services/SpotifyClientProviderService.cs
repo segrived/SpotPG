@@ -1,34 +1,37 @@
 ﻿using SpotifyAPI.Web;
 using SpotPG.Services.Abstractions;
+using SpotPG.Utils;
 
 namespace SpotPG.Services
 {
     public class SpotifyClientProviderService : ISpotifyClientProviderService
     {
-        private readonly ISpotifyCredentialsManager credentialsManager;
+        private readonly IServiceConfiguration configuration;
 
         private ISpotifyClient client;
+        private SpotifyClientInfo currentInfo;
 
-        public SpotifyClientProviderService(ISpotifyCredentialsManager credentialsManager)
+        public SpotifyClientProviderService(IServiceConfiguration configuration)
         {
-            this.credentialsManager = credentialsManager;
+            this.configuration = configuration;
         }
 
         public ISpotifyClient GetSpotifyClient()
         {
-            if (this.client != null)
+            var clientInfo = new SpotifyClientInfo(
+                Helpers.GetEnvOrDefault("SPOTPG_SPOTIFY_CLIENT_ID", this.configuration.SpotifyAccess.ClientId),
+                Helpers.GetEnvOrDefault("SPOTPG_SPOTIFY_CLIENT_SECRET", this.configuration.SpotifyAccess.ClientSecret));
+
+            if (this.client != null && this.currentInfo == clientInfo)
                 return this.client;
 
-            var authorizationCodeTokenResponse = new AuthorizationCodeTokenResponse
+            var authResponse = new AuthorizationCodeTokenResponse
             {
-                AccessToken = this.credentialsManager.AccessToken,
-                RefreshToken = this.credentialsManager.RefreshToken
+                AccessToken = this.configuration.SpotifyAccess.AccessToken,
+                RefreshToken = this.configuration.SpotifyAccess.RefreshToken
             };
 
-            var auth = new AuthorizationCodeAuthenticator(
-                this.credentialsManager.ClientId,
-                this.credentialsManager.ClientSecret,
-                authorizationCodeTokenResponse);
+            var auth = new AuthorizationCodeAuthenticator(clientInfo.Id, clientInfo.Secret, authResponse);
 
             var config = SpotifyClientConfig.CreateDefault()
                 .WithDefaultPaginator(new SimplePaginator())
@@ -36,8 +39,11 @@ namespace SpotPG.Services
                 .WithAuthenticator(auth);
 
             this.client = new SpotifyClient(config);
+            this.currentInfo = clientInfo;
 
             return this.client;
         }
+
+        public record SpotifyClientInfo(string Id, string Secret);
     }
 }
