@@ -20,7 +20,7 @@ namespace SpotPG.Pages.Components
 
             return opts.SortBy switch
             {
-                SortMode.ByAlbum       => releases.OrderBy(r => String.Join(", ", r.Artists)).ToList(),
+                SortMode.ByArtist      => releases.OrderBy(r => String.Join(", ", r.Artists)).ToList(),
                 SortMode.ByReleaseName => releases.OrderBy(r => r.ReleaseName).ToList(),
                 SortMode.ByReleaseDate => releases.OrderBy(r => r.ReleaseDate).ToList(),
                 var _ => releases
@@ -29,7 +29,7 @@ namespace SpotPG.Pages.Components
 
         private enum SortMode
         {
-            ByAlbum,
+            ByArtist,
             ByReleaseName,
             ByReleaseDate
         }
@@ -40,7 +40,7 @@ namespace SpotPG.Pages.Components
             public bool IncludeCompilations { get; set; } = true;
             public bool IncludeSingles { get; set; } = true;
 
-            public SortMode SortBy { get; set; }
+            public SortMode SortBy { get; set; } = SortMode.ByReleaseName;
         }
     }
 }
