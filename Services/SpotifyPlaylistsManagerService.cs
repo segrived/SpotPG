@@ -50,8 +50,13 @@ namespace SpotPG.Services
             var client = this.clientProviderService.GetSpotifyClient();
 
             var user = await client.UserProfile.Current();
-            var playlistsResult = await client.Playlists.GetUsers(user.Id);
-            return playlistsResult.Items?.Where(i => i.Description == PLAYLIST_MARKET).Select(SpotifyApiConverters.Convert).ToList();
+
+            var firstPlaylistsPagerResult = await client.Playlists.GetUsers(user.Id);
+            var allPlaylists = await client.PaginateAll(firstPlaylistsPagerResult);
+
+            return allPlaylists
+                .Where(i => i.Description == PLAYLIST_MARKET)
+                .Select(SpotifyApiConverters.Convert).ToList();
         }
 
         public async Task<bool> DeletePlaylistAsync(string playlistId)
