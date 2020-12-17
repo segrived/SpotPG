@@ -28,11 +28,12 @@ namespace SpotPG.Services
         {
             try
             {
-                var albumTracks = await this.clientProviderService.GetSpotifyClient().Albums.GetTracks(albumId);
-                if (albumTracks.Items == null)
-                    return Result.Fail("Invalid Spotify response received");
+                var client = this.clientProviderService.GetSpotifyClient();
 
-                return albumTracks.Items.Select(SpotifyApiConverters.Convert).ToResult();
+                var firstPageTracks = await client.Albums.GetTracks(albumId);
+                var allTracks = await client.PaginateAll(firstPageTracks);
+
+                return allTracks.Select(SpotifyApiConverters.Convert).ToResult();
             }
             catch (Exception ex)
             {
