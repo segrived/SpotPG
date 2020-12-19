@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,6 +8,7 @@ using MudBlazor.Services;
 using SpotPG.Services;
 using SpotPG.Services.Abstractions;
 using SpotPG.Services.Configuration;
+using SpotPG.Services.Logger;
 
 namespace SpotPG
 {
@@ -31,6 +33,9 @@ namespace SpotPG
             services.AddSingleton<ISceneReleaseNameParserService, SceneReleaseNameParserService>();
             services.AddSingleton<ISpotifySearchQueryGeneratorService, SpotifySearchQueryGeneratorService>();
 
+            services.AddSingleton<ILoggerService, LoggerService>();
+            services.AddTransient(provider => provider.GetService<ILoggerService>()?.CreateLogger());
+
             services.AddMudBlazorDialog();
             services.AddMudBlazorSnackbar();
             services.AddMudBlazorResizeListener();
@@ -38,6 +43,12 @@ namespace SpotPG
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            var loggerService = app.ApplicationServices.GetService<ILoggerService>();
+
+            // TODO: temp solution for debug
+            if (loggerService != null)
+                loggerService.OnNewMessage += (_, args) => Debug.WriteLine($"[{args.Type.ToString().ToUpper()}] {args.Text}");
+
             if (env.IsDevelopment())
                 app.UseDeveloperExceptionPage();
             else

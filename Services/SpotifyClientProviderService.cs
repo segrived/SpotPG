@@ -1,18 +1,21 @@
 ﻿using SpotifyAPI.Web;
 using SpotPG.Services.Abstractions;
+using SpotPG.Services.Logger;
 using SpotPG.Utils;
 
 namespace SpotPG.Services
 {
     public class SpotifyClientProviderService : ISpotifyClientProviderService
     {
+        private readonly ILogger logger;
         private readonly IServiceConfiguration configuration;
 
         private ISpotifyClient client;
         private SpotifyClientInfo currentInfo;
 
-        public SpotifyClientProviderService(IServiceConfiguration configuration)
+        public SpotifyClientProviderService(ILogger logger, IServiceConfiguration configuration)
         {
+            this.logger = logger;
             this.configuration = configuration;
         }
 
@@ -24,6 +27,8 @@ namespace SpotPG.Services
 
             if (this.client != null && this.currentInfo == clientInfo)
                 return this.client;
+
+            this.logger.LogInfo("Recreation Spotify client...");
 
             var authResponse = new AuthorizationCodeTokenResponse
             {
@@ -40,6 +45,8 @@ namespace SpotPG.Services
 
             this.client = new SpotifyClient(config);
             this.currentInfo = clientInfo;
+
+            this.logger.LogInfo("New Spotify client was created successfully");
 
             return this.client;
         }
