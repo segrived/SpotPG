@@ -1,0 +1,4 @@
+﻿namespace SpotPG.Services.Logger
+{
+
+}

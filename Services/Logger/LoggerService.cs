@@ -45,5 +45,15 @@ namespace SpotPG.Services.Logger
         }
     }
 
+    public class LogEventArgs : EventArgs
+    {
+        public LogItem LogItem { get; }
+
+        public LogEventArgs(LogItem logItem)
+        {
+            this.LogItem = logItem with { };
+        }
+    }
+
     public record LogItem(string Text, LogType Type, DateTimeOffset Date);
 }
