@@ -7,7 +7,7 @@ namespace SpotPG.Services.Abstractions
 {
     public interface ISpotifyPlaylistsManagerService
     {
-        Task<SpotifyPlaylist> CreatePlaylistAsync(string playlistName, IEnumerable<SpotifyTrack> tracks, IProgress<int> progress);
+        Task<SpotifyPlaylist> CreatePlaylistAsync(string playlistName, IReadOnlyList<SpotifyTrack> tracks, IProgress<int> progress);
 
         Task<IEnumerable<SpotifyPlaylist>> GetGeneratedPlaylists();
 

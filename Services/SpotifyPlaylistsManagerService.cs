@@ -24,7 +24,7 @@ namespace SpotPG.Services
             this.clientProviderService = clientProviderService;
         }
 
-        public async Task<SpotifyPlaylist> CreatePlaylistAsync(string playlistName, IEnumerable<SpotifyTrack> tracks, IProgress<int> progress)
+        public async Task<SpotifyPlaylist> CreatePlaylistAsync(string playlistName, IReadOnlyList<SpotifyTrack> tracks, IProgress<int> progress)
         {
             var client = this.clientProviderService.GetSpotifyClient();
 
@@ -49,7 +49,7 @@ namespace SpotPG.Services
                 await client.Playlists.AddItems(playlist.Id, new PlaylistAddItemsRequest(chunk));
             }
 
-            this.logger.LogInfo($"CreatePlaylistAsync: Tracks was successfully to playlist {playlistName}");
+            this.logger.LogInfo($"CreatePlaylistAsync: {tracks.Count} track(s) was successfully to playlist {playlistName}");
 
             var updatedPlaylist = await client.Playlists.Get(playlist.Id);
             return SpotifyApiConverters.Convert(updatedPlaylist);
