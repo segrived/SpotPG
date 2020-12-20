@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
-using Microsoft.Extensions.Logging;
 
 namespace SpotPG.Pages.General
 {
@@ -13,13 +12,6 @@ namespace SpotPG.Pages.General
         public string RequestId { get; set; }
 
         public bool ShowRequestId => !String.IsNullOrEmpty(this.RequestId);
-
-        private readonly ILogger<ErrorModel> logger;
-
-        public ErrorModel(ILogger<ErrorModel> logger)
-        {
-            this.logger = logger;
-        }
 
         public void OnGet()
         {

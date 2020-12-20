@@ -14,14 +14,10 @@ namespace SpotPG.Services
         }
 
         public ValueTask<string> ReadTextAsync()
-        {
-            return this.jsRuntime.InvokeAsync<string>("navigator.clipboard.readText");
-        }
+            => this.jsRuntime.InvokeAsync<string>("navigator.clipboard.readText");
 
         public ValueTask WriteTextAsync(string text)
-        {
-            return this.jsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", text);
-        }
+            => this.jsRuntime.InvokeVoidAsync("navigator.clipboard.writeText", text);
     }
 
 }
