@@ -1,3 +1,4 @@
+using Blazored.LocalStorage;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -7,6 +8,7 @@ using MudBlazor.Services;
 using SpotPG.Services;
 using SpotPG.Services.Abstractions;
 using SpotPG.Services.Configuration;
+using SpotPG.Services.Logger;
 
 namespace SpotPG
 {
@@ -31,13 +33,20 @@ namespace SpotPG
             services.AddSingleton<ISceneReleaseNameParserService, SceneReleaseNameParserService>();
             services.AddSingleton<ISpotifySearchQueryGeneratorService, SpotifySearchQueryGeneratorService>();
 
+            services.AddSingleton<ILoggerService, LoggerService>();
+
             services.AddMudBlazorDialog();
             services.AddMudBlazorSnackbar();
             services.AddMudBlazorResizeListener();
+
+            services.AddBlazoredLocalStorage();
         }
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            // we need to create instance for logs collect from application start
+            app.ApplicationServices.GetService<ILoggerService>();
+
             if (env.IsDevelopment())
                 app.UseDeveloperExceptionPage();
             else

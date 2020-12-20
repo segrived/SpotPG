@@ -7,13 +7,15 @@ namespace SpotPG.Services
     {
         public string Generate(ReleaseInfo releaseInfo, QueryGeneratorParameters parameters)
         {
-            var sb = new StringBuilder($"album:{releaseInfo.Title}");
+            (string artists, string title, int year) = releaseInfo;
 
-            if (releaseInfo.Artists != "VA" && releaseInfo.Artists != "Various Artists")
-                sb.Append($" artist:{releaseInfo.Artists}");
+            var sb = new StringBuilder($"album:{title}");
+
+            if (artists != "VA" && artists != "Various Artists")
+                sb.Append($" artist:{artists}");
 
             if (parameters.UseSpecifiedYear)
-                sb.Append($" year:{releaseInfo.Year}");
+                sb.Append($" year:{year}");
 
             return sb.ToString();
         }

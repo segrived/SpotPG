@@ -13,9 +13,10 @@
             <MudGrid>
                 <MudItem xs="12">
                     <MudSelect Label="Sort releases" @bind-Value="playlistCreationOptions.SortBy">
-                        <MudSelectItem Value="@SortMode.ByAlbum">Artist</MudSelectItem>
                         <MudSelectItem Value="@SortMode.ByReleaseName">Title</MudSelectItem>
+                        <MudSelectItem Value="@SortMode.ByArtist">Artist</MudSelectItem>
                         <MudSelectItem Value="@SortMode.ByReleaseDate">Release Date</MudSelectItem>
+                        <MudSelectItem Value="@SortMode.Random">Random</MudSelectItem>
                     </MudSelect>
                 </MudItem>
 

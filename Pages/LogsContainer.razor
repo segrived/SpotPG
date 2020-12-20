@@ -1,0 +1,99 @@
+﻿@page "/logs"
+@using SpotPG.Services.Abstractions
+@using SpotPG.Services.Logger
+@using System.Threading
+@inject ILoggerService LoggerService
+
+<MudPaper Class="p-2" Elevation="1">
+    <MudSwitch @bind-Checked="@isTraceLevelEnabled" Label="Trace" Color="Color.Primary" />
+    <MudSwitch @bind-Checked="@isInfoLevelEnabled" Label="Info" Color="Color.Primary" />
+    <MudSwitch @bind-Checked="@isWarnLevelEnabled" Label="Warn" Color="Color.Primary" />
+    <MudSwitch @bind-Checked="@isErrorLevelEnabled" Label="Error" Color="Color.Primary" />
+</MudPaper>
+
+<MudPaper Class="p-2 mt-3 logs-container" Elevation="1">
+    @if (GetLogMessages().Any())
+    {
+        @foreach ((string text, var logType, var date) in GetLogMessages())
+        {
+            <div>
+                <MudChip Color="@GetChipColor(logType)" Variant="Variant.Outlined" Size="Size.Small">@logType</MudChip>
+                <span class="log-item @GetClassName(logType)"><strong>[@date.ToString("HH:mm:ss UTC")]</strong> @text</span>
+            </div>
+        }
+    }
+    else
+    {
+        <MudText Class="p-3" Align="Align.Center">No logs</MudText>
+    }
+</MudPaper>
+
+@code {
+    private const int MAX_MESSAGES = 25;
+
+    private bool isTraceLevelEnabled = false;
+    private bool isInfoLevelEnabled = true;
+    private bool isWarnLevelEnabled = true;
+    private bool isErrorLevelEnabled = true;
+
+    protected override void OnInitialized()
+    {
+        var _ = new Timer(_ => InvokeAsync(StateHasChanged), null, 500, 5000);
+    }
+
+    private IEnumerable<LogItem> GetLogMessages() => LoggerService.LastLogItems
+        .Where(i => NeedToDisplay(i.Type))
+        .Take(MAX_MESSAGES);
+
+    private bool NeedToDisplay(LogType type) => type switch
+    {
+        LogType.Trace => isTraceLevelEnabled,
+        LogType.Info => isInfoLevelEnabled,
+        LogType.Warn => isWarnLevelEnabled,
+        LogType.Error => isErrorLevelEnabled,
+        var _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+    };
+
+    private static Color GetChipColor(LogType type) => type switch
+    {
+        LogType.Trace => Color.Primary,
+        LogType.Info => Color.Info,
+        LogType.Warn => Color.Warning,
+        LogType.Error => Color.Error,
+        var _ => throw new ArgumentOutOfRangeException(nameof(type), type, null)
+    };
+
+    private static string GetClassName(LogType type)
+        => $"log-{type.ToString().ToLowerInvariant()}";
+}
+
+<style>
+    .logs-container {
+        overflow: auto;
+        white-space: nowrap;
+    }
+
+    .log-item {
+       font-family: monospace;
+    }
+
+    .log-trace {
+        color: var(--bs-cyan);
+    }
+
+    .log-info {
+        color: var(--bs-blue);
+    }
+
+    .log-warn {
+        color: var(--bs-orange);
+    }
+
+    .log-error {
+        color: var(--bs-red);
+    }
+
+    .mud-chip.mud-chip-size-small {
+        width: 65px;
+    }
+</style>

@@ -1,31 +1,23 @@
 ﻿@inherits LayoutComponentBase
-@inject NavigationManager NavigationManager
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
 
 <MudThemeProvider Theme="currentTheme"/>
 <MudDialogProvider FullWidth="true" MaxWidth="MaxWidth.ExtraSmall"/>
 <MudSnackbarProvider/>
 
 <MudLayout>
-    <MudAppBar Elevation="25">
+    <MudAppBar Elevation="1">
+        <MudIconButton Icon="@Icons.Material.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@ToggleMenuDrawer"/>
 
+        <MudAppBarSpacer/>
+
+        <MudIconButton Icon="@Icons.Material.MusicNote" Color="Color.Inherit" OnClick="@(_ => ChangeThemeAsync())"/>
         <MudText Typo="Typo.h6" Class="mudblazor-appbar-brand-text">SpotPG</MudText>
-
-        <MudTooltip Text="Home">
-            <MudIconButton Icon="@Icons.Material.Home" Color="Color.Inherit"  Link="/" />
-        </MudTooltip>
-
-        <MudTooltip Text="Playlists Manager">
-            <MudIconButton Icon="@Icons.Material.PlaylistAdd" Color="Color.Inherit"  Link="/playlists" />
-        </MudTooltip>
-
-        <MudTooltip Text="Settings">
-            <MudIconButton Icon="@Icons.Material.Settings" Color="Color.Inherit" Link="/settings" />
-        </MudTooltip>
 
         <MudAppBarSpacer/>
 
         <MudTooltip Text="Toggle theme">
-            <MudIconButton Icon="@Icons.Material.Brightness4" Color="Color.Inherit" OnClick="@(_ => DarkMode())"/>
+            <MudIconButton Icon="@Icons.Material.Brightness4" Color="Color.Inherit" OnClick="@(_ => ChangeThemeAsync())"/>
         </MudTooltip>
 
         <MudTooltip Text="GitHub">
@@ -33,30 +25,71 @@
         </MudTooltip>
     </MudAppBar>
 
+    <MudDrawer @bind-Open="@isMenuOpened" Clipped="true" Anchor="Anchor.Left" Elevation="1">
+        <MudNavMenu Class="mt-3">
+            <MudNavGroup Title="Playlists Generator" Icon="@Icons.Material.Construction" Expanded="true">
+                <MudNavLink Href="/generator/M2vSource"  Icon="@Icons.Material.PlaylistPlay" Match="NavLinkMatch.All">M2V.ru</MudNavLink>
+                <MudNavLink Href="/generator/NfoDbSource"  Icon="@Icons.Material.PlaylistPlay" Match="NavLinkMatch.All">NfoDB.ru</MudNavLink>
+                <MudNavLink Href="/generator/SceneMp3Source" Icon="@Icons.Material.PlaylistPlay" Match="NavLinkMatch.All">SceneMP3.org</MudNavLink>
+                <MudNavLink Href="/generator/ManualSource" Icon="@Icons.Material.PlaylistPlay" Match="NavLinkMatch.All">Manual input</MudNavLink>
+            </MudNavGroup>
+
+            <MudNavLink Href="/playlists" Icon="@Icons.Material.PlaylistAdd" Match="NavLinkMatch.All">Playlists Manager</MudNavLink>
+            <MudNavLink Href="/settings" Icon="@Icons.Material.Settings" Match="NavLinkMatch.All">Settings</MudNavLink>
+            <MudNavLink Href="/logs" Icon="@Icons.Material.Analytics" Match="NavLinkMatch.All">Application Logs</MudNavLink>
+        </MudNavMenu>
+    </MudDrawer>
+
     <MudMainContent Class="mudblazor-main-content">
         <div class="p-5">@Body</div>
     </MudMainContent>
 </MudLayout>
 
 @code {
-    protected override void OnInitialized()
+
+    bool isMenuOpened = true;
+
+    void ToggleMenuDrawer() => isMenuOpened = !isMenuOpened;
+
+    private readonly Dictionary<string, MudTheme> themes = new()
     {
-        currentTheme = defaultTheme;
+        ["light"] = lightTheme,
+        ["dark"] = darkTheme
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await UpdateCurrentThemeAsync();
     }
 
-    void DarkMode() => currentTheme = currentTheme == defaultTheme ? darkTheme : defaultTheme;
+    private async Task ChangeThemeAsync()
+    {
+        await LocalStorage.SetItemAsync("theme", currentTheme == lightTheme ? "dark" : "light");
+        await UpdateCurrentThemeAsync();
+    }
+
+    private async Task UpdateCurrentThemeAsync()
+    {
+        string themeName = await LocalStorage.GetItemAsStringAsync("theme");
+        currentTheme = !String.IsNullOrEmpty(themeName) && themes.TryGetValue(themeName, out var theme) ? theme : lightTheme;
+    }
 
     MudTheme currentTheme = new();
 
-    readonly MudTheme defaultTheme = new()
+    static readonly MudTheme lightTheme = new()
     {
         Palette = new Palette
         {
             Black = "#272c34"
+        },
+        ZIndex = new ZIndex
+        {
+            AppBar = 1200,
+            Drawer = 1100
         }
     };
 
-    readonly MudTheme darkTheme = new()
+    static readonly MudTheme darkTheme = new()
     {
         Palette = new Palette
         {
@@ -74,6 +107,11 @@
             ActionDisabled = "rgba(255,255,255, 0.26)",
             ActionDisabledBackground = "rgba(255,255,255, 0.12)",
             DrawerIcon = "rgba(255,255,255, 0.50)"
+        },
+        ZIndex = new ZIndex
+        {
+            AppBar = 1200,
+            Drawer = 1100
         }
     };
 }
