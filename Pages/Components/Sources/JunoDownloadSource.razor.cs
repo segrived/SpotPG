@@ -1,20 +1,23 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Net.Http;
 using System.Threading.Tasks;
 using AngleSharp;
+using AngleSharp.Dom;
 using SpotPG.Services;
 
 namespace SpotPG.Pages.Components.Sources
 {
-    public partial class JunoDownloadSourceComponent
+    public partial class JunoDownloadSource
     {
+        private const int ITEMS_PER_PAGE = 100;
         private const string BASE_HOST = "https://junodownload.com";
 
         private readonly HttpClient httpClient;
 
-        public JunoDownloadSourceComponent()
+        public JunoDownloadSource()
         {
             this.httpClient = new HttpClient { BaseAddress = new Uri(BASE_HOST) };
         }
@@ -24,16 +27,18 @@ namespace SpotPG.Pages.Components.Sources
             var config = Configuration.Default;
             var context = BrowsingContext.New(config);
 
-            if (count % 100 != 0)
+            if (count % ITEMS_PER_PAGE != 0)
                 throw new Exception("Invalid releases count");
 
             var releases = new List<ReleaseInfo>();
 
             string genreUrlPart = this.Genres.FirstOrDefault(g => g.Name == genre)?.UrlPart ?? "all";
 
-            for (int i = 1; i <= count / 100; i++)
+            for (int i = 1; i <= count / ITEMS_PER_PAGE; i++)
             {
-                string pageContent = await this.httpClient.GetStringAsync($"/{genreUrlPart}/this-week/releases/{i}/?order=date_down&items_per_page=100");
+                string url = $"/{genreUrlPart}/this-week/releases/{i}/?order=date_down&items_per_page={ITEMS_PER_PAGE}";
+                string pageContent = await this.httpClient.GetStringAsync(url);
+
                 var document = await context.OpenAsync(req => req.Content(pageContent));
 
                 var listingItems = document.QuerySelectorAll(".jd-listing-item");
@@ -44,28 +49,56 @@ namespace SpotPG.Pages.Components.Sources
 
                 foreach (var listingItem in listingItems)
                 {
-                    // Artist
-                    var artistLinks = listingItem.QuerySelectorAll(".juno-artist a");
-                    string artistNames = String.Join(", ", artistLinks.Select(a => a.TextContent));
+                    string artistNames = GetArtists(listingItem);
+                    string artistTitle = GetTitle(listingItem);
 
-                    if (String.IsNullOrEmpty(artistNames))
-                    {
-                        // "Various" as artists case
-                        artistNames = listingItem.QuerySelector(".juno-artist").TextContent;
-                    }
+                    if (!TryGetDate(listingItem, out var date))
+                        continue;
 
-                    //Title
-                    var artistTitleLink = listingItem.QuerySelector(".juno-title");
-                    string artistTitle = artistTitleLink.TextContent;
-
-                    releases.Add(new ReleaseInfo(artistNames, artistTitle, 2020));
+                    releases.Add(new ReleaseInfo(artistNames, artistTitle, date.Year));
                 }
             }
 
             return releases;
         }
 
-        private IList<JunoDownloadGenre> Genres { get; } = new List<JunoDownloadGenre>
+        private static string GetTitle(IParentNode listingItem)
+        {
+            var artistTitleLink = listingItem.QuerySelector(".juno-title");
+            string artistTitle = artistTitleLink.TextContent;
+            return artistTitle;
+        }
+
+        private static string GetArtists(IParentNode listingItem)
+        {
+            var artistLinks = listingItem.QuerySelectorAll(".juno-artist a");
+            string artistNames = String.Join(", ", artistLinks.Select(a => a.TextContent));
+
+            if (String.IsNullOrEmpty(artistNames))
+            {
+                // "Various" as artists case
+                artistNames = listingItem.QuerySelector(".juno-artist").TextContent;
+            }
+
+            return artistNames;
+        }
+
+        private static bool TryGetDate(IParentNode listingItem, out DateTimeOffset date)
+        {
+            date = DateTimeOffset.MinValue;
+
+            string[] releaseDate = listingItem.QuerySelector(".text-right > .text-sm")
+                ?.InnerHtml
+                ?.Split("<br>");
+
+            if (releaseDate == null || releaseDate.Length != 3)
+                return false;
+
+            date = DateTimeOffset.ParseExact(releaseDate[1], "dd MMM yy", CultureInfo.InvariantCulture);
+            return true;
+        }
+
+        private IEnumerable<JunoDownloadGenre> Genres { get; } = new List<JunoDownloadGenre>
         {
             new("all", "All Genres"),
             new("downtempo", "Balearic/Downtempo"),
