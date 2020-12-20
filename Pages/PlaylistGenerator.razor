@@ -1,4 +1,4 @@
-﻿@page "/"
+﻿@page "/generator/{sourceName}"
 @using SpotPG.Utils
 @using SpotPG.Services.Abstractions
 @using SpotPG.Services
@@ -16,7 +16,7 @@
     }
     else
     {
-        <SourceSelectorComponent OnReleasesInfoReceived="ReleasesInfoReceived"/>
+        <SourceSelectorComponent SourceName="@SourceName" OnReleasesInfoReceived="ReleasesInfoReceived"/>
     }
 }
 
@@ -75,6 +75,10 @@
     private IList<ReleaseInfo> sourceReleasesList;
     private IList<SpotifyAlbum> spotifyReleasesList;
     private SpotifyClientConnectionState? spotifyConnectionState;
+
+
+    [Parameter]
+    public string SourceName { get; set; }
 
     protected override async Task OnInitializedAsync()
     {
