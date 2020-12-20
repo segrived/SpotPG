@@ -34,7 +34,7 @@ namespace SpotPG
             services.AddSingleton<ISpotifySearchQueryGeneratorService, SpotifySearchQueryGeneratorService>();
 
             services.AddSingleton<ILoggerService, LoggerService>();
-            services.AddTransient(provider => provider.GetService<ILoggerService>()?.CreateLogger());
+            services.AddSingleton<ILogCollectorService, LogCollectorService>();
 
             services.AddMudBlazorDialog();
             services.AddMudBlazorSnackbar();
@@ -43,12 +43,6 @@ namespace SpotPG
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            var loggerService = app.ApplicationServices.GetService<ILoggerService>();
-
-            // TODO: temp solution for debug
-            if (loggerService != null)
-                loggerService.OnNewMessage += (_, args) => Debug.WriteLine($"[{args.Type.ToString().ToUpper()}] {args.Text}");
-
             if (env.IsDevelopment())
                 app.UseDeveloperExceptionPage();
             else

@@ -18,9 +18,9 @@ namespace SpotPG.Services
         private readonly ILogger logger;
         private readonly ISpotifyClientProviderService clientProviderService;
 
-        public SpotifyPlaylistsManagerService(ILogger logger, ISpotifyClientProviderService clientProviderService)
+        public SpotifyPlaylistsManagerService(ILoggerService loggerService, ISpotifyClientProviderService clientProviderService)
         {
-            this.logger = logger;
+            this.logger = loggerService.CreateLogger();
             this.clientProviderService = clientProviderService;
         }
 

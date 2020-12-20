@@ -13,9 +13,9 @@ namespace SpotPG.Services
         private ISpotifyClient client;
         private SpotifyClientInfo currentInfo;
 
-        public SpotifyClientProviderService(ILogger logger, IServiceConfiguration configuration)
+        public SpotifyClientProviderService(ILoggerService loggerService, IServiceConfiguration configuration)
         {
-            this.logger = logger;
+            this.logger = loggerService.CreateLogger();
             this.configuration = configuration;
         }
 

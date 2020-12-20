@@ -16,9 +16,9 @@ namespace SpotPG.Services
         private readonly ILogger logger;
         private readonly ISpotifyClientProviderService clientProviderService;
 
-        public SpotifyMetaInfoFetcherService(ILogger logger, ISpotifyClientProviderService clientProviderService)
+        public SpotifyMetaInfoFetcherService(ILoggerService loggerService, ISpotifyClientProviderService clientProviderService)
         {
-            this.logger = logger;
+            this.logger = loggerService.CreateLogger();
             this.clientProviderService = clientProviderService;
         }
 
