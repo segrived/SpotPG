@@ -76,7 +76,7 @@ namespace SpotPG.Services
                     {
                         // TODO: Just use first match for now
                         var item = SpotifyApiConverters.Convert(searchResult.Albums.Items[0]);
-                        this.logger.LogWarn($"FindReleaseAsync: Match found {item.ReleaseName} ({item.ReleaseDate:yyyy/MM/dd})");
+                        this.logger.LogTrace($"FindReleaseAsync: Match found {item.ReleaseName} ({item.ReleaseDate:yyyy/MM/dd})");
 
                         return Result.Ok(item);
                     }
