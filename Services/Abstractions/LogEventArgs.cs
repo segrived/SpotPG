@@ -5,14 +5,11 @@ namespace SpotPG.Services.Abstractions
 {
     public class LogEventArgs : EventArgs
     {
-        public string Text { get; }
+        public LogItem LogItem { get; }
 
-        public LogType Type { get; }
-
-        public LogEventArgs(string text, LogType type)
+        public LogEventArgs(LogItem logItem)
         {
-            this.Text = text;
-            this.Type = type;
+            this.LogItem = logItem with { };
         }
     }
 }

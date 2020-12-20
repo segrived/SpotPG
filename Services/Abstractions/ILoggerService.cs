@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using SpotPG.Services.Logger;
 
 namespace SpotPG.Services.Abstractions
 {
@@ -7,5 +9,7 @@ namespace SpotPG.Services.Abstractions
         ILogger CreateLogger();
 
         event EventHandler<LogEventArgs> OnNewMessage;
+
+        IEnumerable<LogItem> LastLogItems { get; }
     }
 }
