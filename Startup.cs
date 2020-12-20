@@ -1,4 +1,3 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
@@ -34,7 +33,6 @@ namespace SpotPG
             services.AddSingleton<ISpotifySearchQueryGeneratorService, SpotifySearchQueryGeneratorService>();
 
             services.AddSingleton<ILoggerService, LoggerService>();
-            services.AddSingleton<ILogCollectorService, LogCollectorService>();
 
             services.AddMudBlazorDialog();
             services.AddMudBlazorSnackbar();
