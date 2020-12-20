@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using SpotPG.Services.Abstractions;
@@ -8,7 +7,7 @@ namespace SpotPG.Services.Logger
 {
     public class LoggerService : ILoggerService
     {
-        private const int MAX_LOG_ITEMS_COUNT = 1000;
+        private const int MAX_LOG_ITEMS_COUNT = 5000;
 
         private readonly LinkedList<LogItem> lastLogItems = new();
 

@@ -41,6 +41,9 @@ namespace SpotPG
 
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
+            // we need to create instance for logs collect from application start
+            app.ApplicationServices.GetService<ILoggerService>();
+
             if (env.IsDevelopment())
                 app.UseDeveloperExceptionPage();
             else
