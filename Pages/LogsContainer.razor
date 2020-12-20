@@ -11,7 +11,7 @@
     <MudSwitch @bind-Checked="@isErrorLevelEnabled" Label="Error" Color="Color.Primary" />
 </MudPaper>
 
-<MudPaper Class="p-2 mt-3" Elevation="1">
+<MudPaper Class="p-2 mt-3 logs-container" Elevation="1">
     @if (GetLogMessages().Any())
     {
         @foreach ((string text, var logType, var date) in GetLogMessages())
@@ -68,9 +68,14 @@
 }
 
 <style>
-     .log-item {
-        font-family: monospace;
-     }
+    .logs-container {
+        overflow: auto;
+        white-space: nowrap;
+    }
+
+    .log-item {
+       font-family: monospace;
+    }
 
     .log-trace {
         color: var(--bs-cyan);
