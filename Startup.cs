@@ -7,6 +7,7 @@ using MudBlazor.Services;
 using SpotPG.Services;
 using SpotPG.Services.Abstractions;
 using SpotPG.Services.Configuration;
+using SpotPG.Services.Logger;
 
 namespace SpotPG
 {
@@ -30,6 +31,8 @@ namespace SpotPG
 
             services.AddSingleton<ISceneReleaseNameParserService, SceneReleaseNameParserService>();
             services.AddSingleton<ISpotifySearchQueryGeneratorService, SpotifySearchQueryGeneratorService>();
+
+            services.AddSingleton<ILoggerService, LoggerService>();
 
             services.AddMudBlazorDialog();
             services.AddMudBlazorSnackbar();
