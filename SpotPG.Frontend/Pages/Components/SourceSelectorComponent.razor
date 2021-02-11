@@ -1,0 +1,49 @@
+﻿@using Microsoft.AspNetCore.Components.Rendering
+@using SpotPG.Frontend.Pages.Components.Sources
+@using SpotPG.Frontend.Services
+@if (ActiveFragment != null)
+{
+    <MudPaper Class="flex-grow-1 flex-shrink-0 pa-2 mx-2 order-2">
+        @ActiveFragment
+    </MudPaper>
+}
+else
+{
+    <MudAlert Severity="Severity.Error">Invalid source specified</MudAlert>
+}
+
+@code {
+
+    private RenderFragment ActiveFragment => fragments.ContainsKey(SourceName) ? fragments[SourceName] : null;
+
+    [Parameter]
+    public string SourceName { get; set; }
+
+    [Parameter]
+    public EventCallback<IEnumerable<ReleaseInfo>> OnReleasesInfoReceived { get; set; }
+
+    private readonly IDictionary<string, RenderFragment> fragments = new Dictionary<string, RenderFragment>();
+
+    protected override void OnInitialized()
+    {
+        base.OnInitialized();
+
+        CreateDynamicComponent<M2vSource>();
+        CreateDynamicComponent<NfoDbSource>();
+        CreateDynamicComponent<SceneMp3Source>();
+        CreateDynamicComponent<JunoDownloadSource>();
+        CreateDynamicComponent<ManualSource>();
+    }
+
+    void CreateDynamicComponent<T>()
+    {
+        void Fragment(RenderTreeBuilder builder)
+        {
+            builder.OpenComponent(0, typeof(T));
+            builder.AddAttribute(1, "OnReleaseListLoaded", EventCallback.Factory.Create<IEnumerable<ReleaseInfo>>(this, r => OnReleasesInfoReceived.InvokeAsync(r)));
+            builder.CloseComponent();
+        }
+
+        fragments.Add(typeof(T).Name, Fragment);
+    }
+}
