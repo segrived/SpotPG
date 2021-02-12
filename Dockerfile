@@ -13,4 +13,4 @@ RUN dotnet publish "SpotPG.Frontend/SpotPG.Frontend.csproj" -c Release -o /app/p
 FROM mcr.microsoft.com/dotnet/aspnet:5.0 AS runtime-env
 COPY --from=0 /app/publish /app
 WORKDIR /app
-ENTRYPOINT ["dotnet", "/app/SpotPG.dll"]
+ENTRYPOINT ["dotnet", "/app/SpotPG.Frontend.dll"]
