@@ -1,0 +1,118 @@
+﻿@inherits LayoutComponentBase
+@inject Blazored.LocalStorage.ILocalStorageService LocalStorage
+
+<MudThemeProvider Theme="currentTheme"/>
+<MudDialogProvider FullWidth="true" MaxWidth="MaxWidth.ExtraSmall"/>
+<MudSnackbarProvider/>
+
+<MudLayout>
+    <MudAppBar Elevation="1">
+        <MudIconButton Icon="@Icons.Material.Outlined.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@ToggleMenuDrawer"/>
+
+        <MudAppBarSpacer/>
+
+        <MudIconButton Icon="@Icons.Material.Outlined.MusicNote" Color="Color.Inherit" OnClick="@(_ => ChangeThemeAsync())"/>
+        <MudText Typo="Typo.h6" Class="mudblazor-appbar-brand-text">SpotPG</MudText>
+
+        <MudAppBarSpacer/>
+
+        <MudTooltip Text="Toggle theme">
+            <MudIconButton Icon="@Icons.Material.Outlined.Brightness4" Color="Color.Inherit" OnClick="@(_ => ChangeThemeAsync())"/>
+        </MudTooltip>
+
+        <MudTooltip Text="GitHub">
+            <MudIconButton Color="Color.Inherit" Link="https://github.com/segrived/SpotPG" Target="_blank"/>
+        </MudTooltip>
+    </MudAppBar>
+
+    <MudDrawer @bind-Open="@isMenuOpened" ClipMode="DrawerClipMode.Docked" Elevation="2">
+        <MudNavMenu Class="mt-3">
+            <MudNavGroup Title="Playlists Generator" Icon="@Icons.Material.Outlined.Construction" Expanded="true">
+                <MudNavLink Href="/generator/M2vSource"  Icon="@Icons.Material.Outlined.PlaylistPlay" Match="NavLinkMatch.All">M2V.ru</MudNavLink>
+                <MudNavLink Href="/generator/NfoDbSource"  Icon="@Icons.Material.Outlined.PlaylistPlay" Match="NavLinkMatch.All">NfoDB.ru</MudNavLink>
+                <MudNavLink Href="/generator/SceneMp3Source" Icon="@Icons.Material.Outlined.PlaylistPlay" Match="NavLinkMatch.All">SceneMP3.org</MudNavLink>
+                <MudNavLink Href="/generator/ManualSource" Icon="@Icons.Material.Outlined.PlaylistPlay" Match="NavLinkMatch.All">Manual input</MudNavLink>
+                <MudNavLink Href="/generator/JunoDownloadSource" Icon="@Icons.Material.Outlined.PlaylistPlay" Match="NavLinkMatch.All">JunoDownload</MudNavLink>
+            </MudNavGroup>
+
+            <MudNavLink Href="/playlists" Icon="@Icons.Material.Outlined.PlaylistAdd" Match="NavLinkMatch.All">Playlists Manager</MudNavLink>
+            <MudNavLink Href="/settings" Icon="@Icons.Material.Outlined.Settings" Match="NavLinkMatch.All">Settings</MudNavLink>
+            <MudNavLink Href="/logs" Icon="@Icons.Material.Outlined.Analytics" Match="NavLinkMatch.All">Application Logs</MudNavLink>
+        </MudNavMenu>
+    </MudDrawer>
+
+    <MudMainContent Class="mudblazor-main-content">
+        <div class="p-5">@Body</div>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+
+    bool isMenuOpened = true;
+
+    void ToggleMenuDrawer() => isMenuOpened = !isMenuOpened;
+
+    private readonly Dictionary<string, MudTheme> themes = new()
+    {
+        ["light"] = lightTheme,
+        ["dark"] = darkTheme
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        await UpdateCurrentThemeAsync();
+    }
+
+    private async Task ChangeThemeAsync()
+    {
+        await LocalStorage.SetItemAsync("theme", currentTheme == lightTheme ? "dark" : "light");
+        await UpdateCurrentThemeAsync();
+    }
+
+    private async Task UpdateCurrentThemeAsync()
+    {
+        string themeName = await LocalStorage.GetItemAsStringAsync("theme");
+        currentTheme = !String.IsNullOrEmpty(themeName) && themes.TryGetValue(themeName, out var theme) ? theme : lightTheme;
+    }
+
+    MudTheme currentTheme = new();
+
+    static readonly MudTheme lightTheme = new()
+    {
+        Palette = new Palette
+        {
+            Black = "#272c34"
+        },
+        ZIndex = new ZIndex
+        {
+            AppBar = 1200,
+            Drawer = 1100
+        }
+    };
+
+    static readonly MudTheme darkTheme = new()
+    {
+        Palette = new Palette
+        {
+            Black = "#27272f",
+            Background = "#32333d",
+            BackgroundGrey = "#27272f",
+            Surface = "#373740",
+            DrawerBackground = "#27272f",
+            DrawerText = "rgba(255,255,255, 0.50)",
+            AppbarBackground = "#27272f",
+            AppbarText = "rgba(255,255,255, 0.70)",
+            TextPrimary = "rgba(255,255,255, 0.70)",
+            TextSecondary = "rgba(255,255,255, 0.50)",
+            ActionDefault = "#adadb1",
+            ActionDisabled = "rgba(255,255,255, 0.26)",
+            ActionDisabledBackground = "rgba(255,255,255, 0.12)",
+            DrawerIcon = "rgba(255,255,255, 0.50)"
+        },
+        ZIndex = new ZIndex
+        {
+            AppBar = 1200,
+            Drawer = 1100
+        }
+    };
+}

@@ -1,0 +1,98 @@
+﻿@page "/playlists"
+@using SpotPG.Models
+@using SpotPG.Spotify.Abstractions
+@using SpotPG.Spotify.Services
+@inject ISpotifyConnectionStateProviderService SpotifyConnectionStateProvider
+@inject ISpotifyPlaylistsManagerService SpotifyPlaylistsManager
+
+@if (isLoading)
+{
+    <h3 class="text-center">Loading data...</h3>
+}
+else if (spotifyConnectionState != null && spotifyConnectionState != SpotifyClientConnectionState.Connected)
+{
+    <MudAlert Severity="Severity.Error">Spotify client error, please check connection settings before processing</MudAlert>
+}
+else if (generatedPlaylists?.Count > 0)
+{
+    <MudGrid>
+        <MudItem xs="12">
+            <MudTable
+                      @bind-SelectedItems="@selectedPlaylists"
+                      Items="@generatedPlaylists"
+                      Dense="true"
+                      Hover="true"
+                      Breakpoint="Breakpoint.Sm"
+                      MultiSelection="true"
+                      RowsPerPage="100">
+                <HeaderContent>
+                    <MudTh Style="width: 50px;">Cover</MudTh>
+                    <MudTh>Name</MudTh>
+                    <MudTh Style="width: 50px;">Actions</MudTh>
+                </HeaderContent>
+
+                <RowTemplate>
+                    <MudTd DataLabel="Cover">
+                        <img src="@context.CoverUrl" alt="cover" style="width: 50px; height: 50px;"/>
+                    </MudTd>
+                    <MudTd DataLabel="Title">@context.Name</MudTd>
+                    <MudTd DataLabel="Actions"><a href="@context.Uri">Open</a></MudTd>
+                </RowTemplate>
+
+                <PagerContent>
+                    <MudTablePager/>
+                </PagerContent>
+            </MudTable>
+        </MudItem>
+
+        @if (selectedPlaylists.Count > 0)
+        {
+            <MudItem xs="12">
+                <MudButton OnClick="DeleteSelectedPlaylists" Variant="Variant.Filled" StartIcon="@Icons.Material.Outlined.Delete" Color="Color.Error">
+                    Delete selected playlists (@selectedPlaylists.Count items)
+                </MudButton>
+            </MudItem>
+        }
+    </MudGrid>
+}
+else
+{
+    <MudCard>
+        <MudCardContent>
+            <MudText Align="Align.Center">No generated playlists found</MudText>
+        </MudCardContent>
+    </MudCard>
+}
+
+@code {
+    private bool isLoading;
+    private IList<SpotifyPlaylist> generatedPlaylists;
+    // ReSharper disable once FieldCanBeMadeReadOnly.Local
+    private HashSet<SpotifyPlaylist> selectedPlaylists = new();
+    private SpotifyClientConnectionState? spotifyConnectionState;
+
+    protected override async Task OnInitializedAsync()
+    {
+        isLoading = true;
+
+        spotifyConnectionState = await SpotifyConnectionStateProvider.GetSpotifyConnectionStatusAsync();
+
+        if (spotifyConnectionState == SpotifyClientConnectionState.Connected)
+            generatedPlaylists = (await SpotifyPlaylistsManager.GetGeneratedPlaylists()).ToList();
+
+        isLoading = false;
+    }
+
+    private async Task DeleteSelectedPlaylists()
+    {
+        foreach (var playlist in selectedPlaylists)
+        {
+            if (!await SpotifyPlaylistsManager.DeletePlaylistAsync(playlist.Id))
+                continue;
+
+            generatedPlaylists.Remove(playlist);
+            StateHasChanged();
+        }
+    }
+
+}

@@ -1,0 +1,14 @@
+{
+  "profiles": {
+    "SpotPG.Frontend": {
+      "commandName": "Project",
+      "dotnetRunMessages": "true",
+      "launchBrowser": true,
+      "applicationUrl": "https://localhost:5001",
+      "environmentVariables": {
+        "ASPNETCORE_ENVIRONMENT": "Development",
+        "SPOTPG_CONFIG_PATH": "$(ProjectDir)$(OutputPath)config.json"
+      }
+    }
+  }
+}

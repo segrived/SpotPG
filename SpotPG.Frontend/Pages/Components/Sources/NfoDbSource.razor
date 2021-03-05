@@ -1,0 +1,51 @@
+﻿@using SpotPG.Frontend.Services.Abstractions
+@using SpotPG.Frontend.Services
+@inject ISceneReleaseNameParserService ParserService
+
+<MudGrid>
+    <MudItem xs="12">
+        <MudDatePicker DateFormat="yyyy-MM-dd" @bind-Date="@date" DisableToolbar="true" Disabled="inProcess" Label="Release Date" Class="w-100" />
+    </MudItem>
+
+    <MudItem xs="12">
+        <MudAutocomplete @bind-Value="genre"
+                          T="string"
+                          Label="Genre"
+                          Dense="true"
+                          MaxHeight="400"
+                          Disabled="inProcess"
+                          SearchFunc="@SearchGenre"
+                          ResetValueOnEmptyText="true"
+                          AdornmentIcon="@Icons.Material.Outlined.List"
+                          Adornment="Adornment.Start"/>
+    </MudItem>
+
+    <MudItem xs="12">
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" OnClick="GetReleases">Load releases</MudButton>
+    </MudItem>
+</MudGrid>
+
+@code {
+    private bool inProcess;
+
+    // ReSharper disable once FieldCanBeMadeReadOnly.Local
+    private DateTime? date = DateTime.UtcNow.Date;
+    private string genre = "";
+
+    private async Task GetReleases()
+    {
+        inProcess = true;
+
+        var result = await GetReleaseNamesAsync(date ?? DateTime.UtcNow, String.IsNullOrEmpty(genre) ? null : genre);
+        await OnReleaseListLoaded.InvokeAsync(result);
+
+        inProcess = false;
+    }
+
+    [Parameter]
+    public EventCallback<IEnumerable<ReleaseInfo>> OnReleaseListLoaded { get; set; }
+
+    private static async Task<IEnumerable<string>> SearchGenre(string subStr)
+        => Genres.Where(g => g.Contains(subStr ?? "", StringComparison.InvariantCultureIgnoreCase));
+
+}
