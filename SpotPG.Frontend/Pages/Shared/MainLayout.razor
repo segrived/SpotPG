@@ -25,7 +25,7 @@
         </MudTooltip>
     </MudAppBar>
 
-    <MudDrawer @bind-Open="@isMenuOpened" Clipped="true" Anchor="Anchor.Left" Elevation="1">
+    <MudDrawer @bind-Open="@isMenuOpened" ClipMode="DrawerClipMode.Docked" Elevation="2">
         <MudNavMenu Class="mt-3">
             <MudNavGroup Title="Playlists Generator" Icon="@Icons.Material.Outlined.Construction" Expanded="true">
                 <MudNavLink Href="/generator/M2vSource"  Icon="@Icons.Material.Outlined.PlaylistPlay" Match="NavLinkMatch.All">M2V.ru</MudNavLink>
