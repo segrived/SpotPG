@@ -1,10 +1,7 @@
-﻿using System.Threading.Tasks;
+﻿namespace SpotPG.Frontend.Services.Abstractions;
 
-namespace SpotPG.Frontend.Services.Abstractions
+public interface IClipboardService
 {
-    public interface IClipboardService
-    {
-        ValueTask<string> ReadTextAsync();
-        ValueTask WriteTextAsync(string text);
-    }
+    ValueTask<string> ReadTextAsync();
+    ValueTask WriteTextAsync(string text);
 }

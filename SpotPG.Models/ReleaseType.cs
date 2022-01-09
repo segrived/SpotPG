@@ -1,10 +1,9 @@
-﻿namespace SpotPG.Models
+﻿namespace SpotPG.Models;
+
+public enum ReleaseType
 {
-    public enum ReleaseType
-    {
-        Album,
-        Single,
-        Compilation,
-        Unknown
-    }
+    Album,
+    Single,
+    Compilation,
+    Unknown
 }

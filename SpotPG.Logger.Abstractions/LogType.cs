@@ -1,10 +1,9 @@
-﻿namespace SpotPG.Logger.Abstractions
+﻿namespace SpotPG.Logger.Abstractions;
+
+public enum LogType
 {
-    public enum LogType
-    {
-        Trace,
-        Info,
-        Warn,
-        Error
-    }
+    Trace,
+    Info,
+    Warn,
+    Error
 }

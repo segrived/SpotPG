@@ -1,14 +1,11 @@
-﻿using System;
+﻿namespace SpotPG.Logger.Abstractions;
 
-namespace SpotPG.Logger.Abstractions
+public class LogEventArgs : EventArgs
 {
-    public class LogEventArgs : EventArgs
-    {
-        public LogItem LogItem { get; }
+    public LogItem LogItem { get; }
 
-        public LogEventArgs(LogItem logItem)
-        {
-            this.LogItem = logItem with { };
-        }
+    public LogEventArgs(LogItem logItem)
+    {
+        this.LogItem = logItem with { };
     }
 }

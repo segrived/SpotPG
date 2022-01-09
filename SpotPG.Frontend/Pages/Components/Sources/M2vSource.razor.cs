@@ -1,75 +1,69 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.Linq;
-using System.Net.Http;
-using System.Threading.Tasks;
+﻿using System.Globalization;
 using AngleSharp;
 using AngleSharp.Dom;
-using SpotPG.Frontend.Services;
+using SpotPG.Frontend.Services.Models;
 
-namespace SpotPG.Frontend.Pages.Components.Sources
+namespace SpotPG.Frontend.Pages.Components.Sources;
+
+// ReSharper disable once InconsistentNaming
+public partial class M2vSource
 {
-    // ReSharper disable once InconsistentNaming
-    public partial class M2vSource
+    private const string BASE_HOST = "http://m2v.ru";
+
+    private readonly HttpClient httpClient;
+
+    public M2vSource()
     {
-        private const string BASE_HOST = "http://m2v.ru";
+        this.httpClient = new HttpClient {BaseAddress = new Uri(BASE_HOST)};
+    }
 
-        private readonly HttpClient httpClient;
+    private async Task<IEnumerable<ReleaseInfo>> GetReleasesAsync(DateTime dateParam)
+    {
+        int page = 1;
+        int totalPagesCount = 0;
 
-        public M2vSource()
+        var ctx = BrowsingContext.New(Configuration.Default);
+
+        var releases = new List<string>();
+
+        do
         {
-            this.httpClient = new HttpClient {BaseAddress = new Uri(BASE_HOST)};
-        }
+            string pageContent = await this.httpClient.GetStringAsync(GenerateUrl(dateParam, page));
 
-        private async Task<IEnumerable<ReleaseInfo>> GetReleasesAsync(DateTime dateParam)
-        {
-            int page = 1;
-            int totalPagesCount = 0;
+            var document = await ctx.OpenAsync(req => req.Content(pageContent));
 
-            var ctx = BrowsingContext.New(Configuration.Default);
+            if (totalPagesCount == 0)
+                totalPagesCount = GetPagesCount(document);
 
-            var releases = new List<string>();
+            var names = document.QuerySelectorAll(".MainTable td a")
+                .Where(l => l.GetAttribute("href").StartsWith("?id="))
+                .Select(l => l.TextContent)
+                // No way to exclude FLAC releases with query
+                .Where(n => !n.Contains("-FLAC-"));
 
-            do
-            {
-                string pageContent = await this.httpClient.GetStringAsync(GenerateUrl(dateParam, page));
+            releases.AddRange(names);
+        } while (page++ < totalPagesCount);
 
-                var document = await ctx.OpenAsync(req => req.Content(pageContent));
+        return releases.Select(name => this.ParserService.Parse(name))
+            .Where(r => r.IsSuccess)
+            .Select(r => r.Value);
+    }
 
-                if (totalPagesCount == 0)
-                    totalPagesCount = GetPagesCount(document);
+    private static int GetPagesCount(IParentNode document)
+    {
+        var elems = document.QuerySelectorAll("#nav").ToList();
 
-                var names = document.QuerySelectorAll(".MainTable td a")
-                    .Where(l => l.GetAttribute("href").StartsWith("?id="))
-                    .Select(l => l.TextContent)
-                    // No way to exclude FLAC releases with query
-                    .Where(n => !n.Contains("-FLAC-"));
+        if (elems.Count <= 0)
+            return 1;
 
-                releases.AddRange(names);
-            } while (page++ < totalPagesCount);
+        return elems.Select(e => e.TextContent)
+            .Select(e => e.Replace(".", "").Replace("[", "").Replace("]", ""))
+            .Select(Int32.Parse).Max();
+    }
 
-            return releases.Select(name => this.ParserService.Parse(name))
-                .Where(r => r.IsSuccess)
-                .Select(r => r.Value);
-        }
-
-        private static int GetPagesCount(IParentNode document)
-        {
-            var elems = document.QuerySelectorAll("#nav").ToList();
-
-            if (elems.Count <= 0)
-                return 1;
-
-            return elems.Select(e => e.TextContent)
-                .Select(e => e.Replace(".", "").Replace("[", "").Replace("]", ""))
-                .Select(Int32.Parse).Max();
-        }
-
-        private static string GenerateUrl(DateTime date, int page)
-        {
-            string dateFormat = date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
-            return $"?func=part&Part=8&cur_date={dateFormat}&page={page}";
-        }
+    private static string GenerateUrl(DateTime date, int page)
+    {
+        string dateFormat = date.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture);
+        return $"?func=part&Part=8&cur_date={dateFormat}&page={page}";
     }
 }

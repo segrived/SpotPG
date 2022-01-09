@@ -1,10 +1,8 @@
-﻿using System.Threading.Tasks;
-using SpotPG.Spotify.Services;
+﻿using SpotPG.Spotify.Services;
 
-namespace SpotPG.Spotify.Abstractions
+namespace SpotPG.Spotify.Abstractions;
+
+public interface ISpotifyConnectionStateProviderService
 {
-    public interface ISpotifyConnectionStateProviderService
-    {
-        Task<SpotifyClientConnectionState> GetSpotifyConnectionStatusAsync();
-    }
+    Task<SpotifyClientConnectionState> GetSpotifyConnectionStatusAsync();
 }

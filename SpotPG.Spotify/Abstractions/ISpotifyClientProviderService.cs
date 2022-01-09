@@ -1,9 +1,8 @@
 ﻿using SpotifyAPI.Web;
 
-namespace SpotPG.Spotify.Abstractions
+namespace SpotPG.Spotify.Abstractions;
+
+public interface ISpotifyClientProviderService
 {
-    public interface ISpotifyClientProviderService
-    {
-        ISpotifyClient GetSpotifyClient();
-    }
+    ISpotifyClient GetSpotifyClient();
 }

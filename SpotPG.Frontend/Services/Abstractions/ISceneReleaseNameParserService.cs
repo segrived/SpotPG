@@ -1,9 +1,9 @@
 ﻿using FluentResults;
+using SpotPG.Frontend.Services.Models;
 
-namespace SpotPG.Frontend.Services.Abstractions
+namespace SpotPG.Frontend.Services.Abstractions;
+
+public interface ISceneReleaseNameParserService
 {
-    public interface ISceneReleaseNameParserService
-    {
-        Result<ReleaseInfo> Parse(string releaseName);
-    }
+    Result<ReleaseInfo> Parse(string releaseName);
 }

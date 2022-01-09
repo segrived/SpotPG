@@ -1,48 +1,43 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using SpotPG.Logger;
-using SpotPG.Logger.Abstractions;
+﻿using SpotPG.Logger.Abstractions;
 
-namespace SpotPG.Frontend.Services
+namespace SpotPG.Frontend.Services;
+
+public class LoggerService : ILoggerService
 {
-    public class LoggerService : ILoggerService
+    private const int MAX_LOG_ITEMS_COUNT = 5000;
+
+    private readonly LinkedList<LogItem> lastLogItems = new();
+
+    public event EventHandler<LogEventArgs> OnNewMessage;
+
+    public IEnumerable<LogItem> LastLogItems => this.lastLogItems.AsEnumerable();
+
+    public IServiceLogger CreateLogger()
     {
-        private const int MAX_LOG_ITEMS_COUNT = 5000;
+        var logger = new Logger();
+        logger.OnNewMessage += this.Logger_OnNewMessage;
 
-        private readonly LinkedList<LogItem> lastLogItems = new();
+        return logger;
+    }
 
-        public event EventHandler<LogEventArgs> OnNewMessage;
+    private void Logger_OnNewMessage(object sender, LogEventArgs e)
+    {
+        this.OnNewMessage?.Invoke(this, new LogEventArgs(e.LogItem));
 
-        public IEnumerable<LogItem> LastLogItems => this.lastLogItems.AsEnumerable();
+        this.lastLogItems.AddFirst(e.LogItem);
 
-        public ILogger CreateLogger()
+        if (this.lastLogItems.Count > MAX_LOG_ITEMS_COUNT)
+            this.lastLogItems.RemoveLast();
+    }
+
+    private class Logger : IServiceLogger
+    {
+        internal event EventHandler<LogEventArgs> OnNewMessage;
+
+        public void Log(string text, LogType type)
         {
-            var logger = new Logger();
-            logger.OnNewMessage += this.Logger_OnNewMessage;
-
-            return logger;
-        }
-
-        private void Logger_OnNewMessage(object sender, LogEventArgs e)
-        {
-            this.OnNewMessage?.Invoke(this, new LogEventArgs(e.LogItem));
-
-            this.lastLogItems.AddFirst(e.LogItem);
-
-            if (this.lastLogItems.Count > MAX_LOG_ITEMS_COUNT)
-                this.lastLogItems.RemoveLast();
-        }
-
-        private class Logger : ILogger
-        {
-            internal event EventHandler<LogEventArgs> OnNewMessage;
-
-            public void Log(string text, LogType type)
-            {
-                var logItem = new LogItem(text, type, DateTimeOffset.UtcNow);
-                this.OnNewMessage?.Invoke(this, new LogEventArgs(logItem));
-            }
+            var logItem = new LogItem(text, type, DateTimeOffset.UtcNow);
+            this.OnNewMessage?.Invoke(this, new LogEventArgs(logItem));
         }
     }
 }

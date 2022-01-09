@@ -1,14 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
+﻿namespace SpotPG.Logger.Abstractions;
 
-namespace SpotPG.Logger.Abstractions
+public interface ILoggerService
 {
-    public interface ILoggerService
-    {
-        ILogger CreateLogger();
+    IServiceLogger CreateLogger();
 
-        event EventHandler<LogEventArgs> OnNewMessage;
+    event EventHandler<LogEventArgs> OnNewMessage;
 
-        IEnumerable<LogItem> LastLogItems { get; }
-    }
+    IEnumerable<LogItem> LastLogItems { get; }
 }

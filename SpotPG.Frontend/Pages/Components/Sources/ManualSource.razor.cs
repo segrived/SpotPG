@@ -1,19 +1,15 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using SpotPG.Frontend.Services;
+﻿using SpotPG.Frontend.Services.Models;
 
-namespace SpotPG.Frontend.Pages.Components.Sources
+namespace SpotPG.Frontend.Pages.Components.Sources;
+
+public partial class ManualSource
 {
-    public partial class ManualSource
+    private IEnumerable<ReleaseInfo> Parse(string releasesList)
     {
-        private IEnumerable<ReleaseInfo> Parse(string releasesList)
-        {
-            return releasesList
-                .Split("\n", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
-                .Select(name => this.ParserService.Parse(name))
-                .Where(r => r.IsSuccess)
-                .Select(r => r.Value);
-        }
+        return releasesList
+            .Split("\n", StringSplitOptions.TrimEntries | StringSplitOptions.RemoveEmptyEntries)
+            .Select(name => this.ParserService.Parse(name))
+            .Where(r => r.IsSuccess)
+            .Select(r => r.Value);
     }
 }
